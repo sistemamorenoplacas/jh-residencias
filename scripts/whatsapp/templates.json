@@ -1,0 +1,66 @@
+[
+  {
+    "name": "cobranca_aluguel",
+    "language": "pt_BR",
+    "category": "UTILITY",
+    "components": [
+      {
+        "type": "BODY",
+        "text": "Olá {{1}}! Sua cobrança de aluguel referente a {{2}} no valor de R$ {{3}} vence em {{4}}.\n\nPague pelo Pix (copia e cola) ou pelo link: {{5}}\n\nQualquer dúvida, é só responder esta mensagem.",
+        "example": {
+          "body_text": [
+            [
+              "Marina Couto",
+              "Julho/2026",
+              "1.850,00",
+              "10/07/2026",
+              "https://mpago.la/2Xy9Zk"
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "lembrete_vencimento",
+    "language": "pt_BR",
+    "category": "UTILITY",
+    "components": [
+      {
+        "type": "BODY",
+        "text": "Olá {{1}}! Lembrete: o aluguel referente a {{2}} no valor de {{3}} vence em {{4}}.\n\nPara evitar juros, pague pelo Pix ou pelo link: {{5}}\n\nObrigado!",
+        "example": {
+          "body_text": [
+            [
+              "Marina Couto",
+              "Julho/2026",
+              "R$ 1.850,00",
+              "10/07/2026",
+              "https://mpago.la/2Xy9Zk"
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "pagamento_confirmado",
+    "language": "pt_BR",
+    "category": "UTILITY",
+    "components": [
+      {
+        "type": "BODY",
+        "text": "Olá {{1}}! Confirmamos o recebimento do seu pagamento do aluguel referente a {{2}} no valor de {{3}}. Obrigado!",
+        "example": {
+          "body_text": [
+            [
+              "Marina Couto",
+              "Julho/2026",
+              "R$ 1.850,00"
+            ]
+          ]
+        }
+      }
+    ]
+  }
+]
