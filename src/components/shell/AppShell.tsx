@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Sidebar } from "./Sidebar";
 import { MobileNav } from "./MobileNav";
+import { getSession } from "@/lib/auth";
 
 interface AppShellProps {
   title: string;
@@ -9,10 +10,12 @@ interface AppShellProps {
   children: ReactNode;
 }
 
-export function AppShell({ title, subtitle, actions, children }: AppShellProps) {
+export async function AppShell({ title, subtitle, actions, children }: AppShellProps) {
+  const user = await getSession();
+
   return (
     <div className="flex min-h-dvh bg-canvas">
-      <Sidebar />
+      <Sidebar user={user ?? undefined} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between gap-4 border-b border-line bg-surface/80 px-5 py-4 backdrop-blur lg:px-8">

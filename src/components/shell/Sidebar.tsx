@@ -4,6 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+export interface SidebarUser {
+  email: string | null;
+}
+
 interface NavItem {
   href: string;
   label: string;
@@ -73,8 +77,11 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function Sidebar() {
+export function Sidebar({ user }: { user?: SidebarUser }) {
   const pathname = usePathname();
+  const inicial = user?.email?.[0]?.toUpperCase() ?? "A";
+  const emailDisplay = user?.email ?? "Administrador";
+
   return (
     <aside className="sticky top-0 hidden h-dvh w-[212px] shrink-0 flex-col bg-sidebar px-3 py-5 lg:flex">
       <div className="flex items-center px-2.5 pb-6">
@@ -101,13 +108,20 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-2 flex items-center gap-3 rounded-xl px-2.5 py-2.5">
-        <span className="flex size-8 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white">A</span>
+      <Link
+        href="/perfil"
+        className={`mt-2 flex items-center gap-3 rounded-xl px-2.5 py-2.5 transition-colors hover:bg-white/5 ${
+          isActive(pathname, "/perfil") ? "bg-white/10" : ""
+        }`}
+      >
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white">
+          {inicial}
+        </span>
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-white">Administrador</p>
-          <p className="truncate text-xs text-sidebar-text">Uso próprio</p>
+          <p className="truncate text-sm font-medium text-white">Meu perfil</p>
+          <p className="truncate text-xs text-sidebar-text">{emailDisplay}</p>
         </div>
-      </div>
+      </Link>
     </aside>
   );
 }
