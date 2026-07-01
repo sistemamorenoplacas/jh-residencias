@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { Tenant } from "@/lib/types";
 import { TenantForm } from "./TenantForm";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 import {
   excluirInquilino,
   TENANT_FORM_INITIAL_STATE,
@@ -14,10 +15,7 @@ interface TenantListProps {
   tenants: Tenant[];
 }
 
-type Editing =
-  | { mode: "create" }
-  | { mode: "edit"; tenant: Tenant }
-  | null;
+type Editing = { mode: "create" } | { mode: "edit"; tenant: Tenant } | null;
 
 const IconPlus = (
   <svg
@@ -122,7 +120,9 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
         </svg>
       </span>
       <div>
-        <p className="text-base font-semibold text-ink">Nenhum inquilino ainda</p>
+        <p className="text-base font-semibold text-ink">
+          Nenhum inquilino ainda
+        </p>
         <p className="mt-1 text-sm text-muted">
           Cadastre seu primeiro inquilino para gerar cobranças.
         </p>
@@ -155,9 +155,7 @@ export function TenantList({ tenants }: TenantListProps) {
   const [busca, setBusca] = useState("");
 
   const filtrados = busca.trim()
-    ? tenants.filter((t) =>
-        t.nome.toLowerCase().includes(busca.toLowerCase()),
-      )
+    ? tenants.filter((t) => t.nome.toLowerCase().includes(busca.toLowerCase()))
     : tenants;
 
   function closePanel() {
@@ -195,15 +193,15 @@ export function TenantList({ tenants }: TenantListProps) {
             {filtrados.length}{" "}
             {filtrados.length === 1 ? "inquilino" : "inquilinos"}
           </p>
-        <button
-          type="button"
-          onClick={() => setEditing({ mode: "create" })}
-          className="inline-flex items-center gap-2 rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-tint"
-        >
-          {IconPlus}
-          <span className="hidden sm:inline">Adicionar inquilino</span>
-          <span className="sm:hidden">Adicionar</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setEditing({ mode: "create" })}
+            className="inline-flex items-center gap-2 rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-tint"
+          >
+            {IconPlus}
+            <span className="hidden sm:inline">Adicionar inquilino</span>
+            <span className="sm:hidden">Adicionar</span>
+          </button>
         </div>
       </div>
 
@@ -251,9 +249,7 @@ export function TenantList({ tenants }: TenantListProps) {
                     <td className="px-5 py-3.5 text-muted tnum">
                       {displayTelefone(t.telefone)}
                     </td>
-                    <td className="px-5 py-3.5 text-muted">
-                      {t.email ?? "—"}
-                    </td>
+                    <td className="px-5 py-3.5 text-muted">{t.email ?? "—"}</td>
                     <td className="px-5 py-3.5 text-muted tnum">
                       {maskCpf(t.cpf)}
                     </td>
@@ -320,29 +316,33 @@ export function TenantList({ tenants }: TenantListProps) {
       ) : null}
 
       {editing ? (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-0 backdrop-blur-sm sm:items-center sm:p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label={
-            editing.mode === "edit" ? "Editar inquilino" : "Novo inquilino"
-          }
-          onClick={closePanel}
-        >
+        <ModalPortal>
           <div
-            className="w-full max-w-md rounded-t-shell border border-line bg-surface p-5 shadow-xl sm:rounded-shell sm:p-6"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label={
+              editing.mode === "edit" ? "Editar inquilino" : "Novo inquilino"
+            }
+            onClick={closePanel}
           >
-            <h2 className="mb-4 text-base font-semibold tracking-tight text-ink">
-              {editing.mode === "edit" ? "Editar inquilino" : "Novo inquilino"}
-            </h2>
-            <TenantForm
-              tenant={editing.mode === "edit" ? editing.tenant : undefined}
-              onCancel={closePanel}
-              onSuccess={closePanel}
-            />
+            <div
+              className="w-full max-w-md rounded-t-shell border border-line bg-surface p-5 shadow-xl sm:rounded-shell sm:p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="mb-4 text-base font-semibold tracking-tight text-ink">
+                {editing.mode === "edit"
+                  ? "Editar inquilino"
+                  : "Novo inquilino"}
+              </h2>
+              <TenantForm
+                tenant={editing.mode === "edit" ? editing.tenant : undefined}
+                onCancel={closePanel}
+                onSuccess={closePanel}
+              />
+            </div>
           </div>
-        </div>
+        </ModalPortal>
       ) : null}
     </div>
   );
