@@ -94,8 +94,11 @@ export function Sidebar({ user }: { user?: SidebarUser }) {
   return (
     <aside className="sticky top-0 hidden h-dvh w-[236px] shrink-0 flex-col border-r border-line bg-sidebar px-4 py-6 lg:flex">
       {/* Logo centralizada no topo (cabeçalho da marca) */}
-      <div className="mb-2 flex justify-center">
+      <div className="mb-2 flex flex-col items-center">
         <img src="/logo.svg" alt="JH Residências" className="h-40 w-auto max-w-full" />
+        <p className="-mt-2 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-faint">
+          Sistema de Gestão
+        </p>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">
