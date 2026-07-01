@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useId } from "react";
+import { useActionState, useEffect, useId, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import type { Tenant } from "@/lib/types";
@@ -10,6 +10,69 @@ import {
   TENANT_FORM_INITIAL_STATE,
   type TenantFormState,
 } from "@/app/(painel)/inquilinos/actions";
+
+/**
+ * Formata dígitos de telefone BR como `+55 (11) 99999-8888` conforme o
+ * usuário digita. Aceita entrada com ou sem o prefixo "+55" e sempre
+ * devolve uma máscara visual — o valor enviado ao servidor é normalizado
+ * separadamente para E.164 (`normalizePhoneE164`), pois a Server Action
+ * exige o formato estrito `/^\+[1-9]\d{6,14}$/` sem parênteses/espaços.
+ */
+function formatPhoneBR(raw: string): string {
+  // Mantém apenas dígitos, descartando um eventual "55" duplicado de DDI
+  // colado à frente (o usuário pode digitar com ou sem o "+55").
+  let digits = raw.replace(/\D/g, "");
+
+  // Remove o DDI 55 se já vier embutido, para tratar sempre DDD+número.
+  if (digits.startsWith("55") && digits.length > 11) {
+    digits = digits.slice(2);
+  }
+  digits = digits.slice(0, 11);
+
+  if (digits.length === 0) return "";
+
+  const ddd = digits.slice(0, 2);
+  const rest = digits.slice(2);
+
+  let formatted = "+55";
+  if (ddd) formatted += ` (${ddd}`;
+  if (ddd.length === 2) formatted += ")";
+  if (rest.length > 0) {
+    const isCelular = rest.length > 4;
+    const prefixLen = isCelular ? rest.length - 4 : rest.length;
+    const prefix = rest.slice(0, Math.min(prefixLen, 5));
+    const suffix = rest.slice(prefix.length);
+    formatted += ` ${prefix}`;
+    if (suffix) formatted += `-${suffix}`;
+  }
+
+  return formatted;
+}
+
+/** Extrai o E.164 (`+5511999998888`) a partir da string mascarada/digitada. */
+function normalizePhoneE164(raw: string): string {
+  let digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("55") && digits.length > 11) {
+    digits = digits.slice(2);
+  }
+  digits = digits.slice(0, 11);
+  return digits.length > 0 ? `+55${digits}` : "";
+}
+
+/** Formata dígitos de CPF como `000.000.000-11` conforme o usuário digita. */
+function formatCpf(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  const part1 = digits.slice(0, 3);
+  const part2 = digits.slice(3, 6);
+  const part3 = digits.slice(6, 9);
+  const part4 = digits.slice(9, 11);
+
+  let formatted = part1;
+  if (part2) formatted += `.${part2}`;
+  if (part3) formatted += `.${part3}`;
+  if (part4) formatted += `-${part4}`;
+  return formatted;
+}
 
 interface TenantFormProps {
   /** Quando presente, o form opera em modo edição. */
@@ -37,9 +100,20 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
 /**
  * Formulário de criação/edição de inquilino.
  *
- * Inputs não-controlados + Server Action via `useActionState`. A validação
- * forte (E.164, e-mail, CPF) acontece no servidor; aqui há apenas dicas de
- * formato e `required` no nome/telefone para feedback imediato.
+ * Nome e e-mail permanecem não-controlados (`defaultValue`). Telefone e CPF
+ * são controlados para aplicar máscara de digitação em tempo real:
+ *  - Telefone exibe `+55 (11) 99999-8888`, mas o valor enviado no `name`
+ *    real usado pela Server Action (`telefone`) é o E.164 normalizado
+ *    (`+5511999998888`), pois o validador do servidor é estrito
+ *    (`/^\+[1-9]\d{6,14}$/`, sem parênteses/espaços). O input visível usa
+ *    um `name` próprio e um `<input type="hidden" name="telefone">` carrega
+ *    o valor normalizado de fato submetido.
+ *  - CPF exibe `000.000.000-00`; a Server Action já normaliza removendo
+ *    não-dígitos antes de validar, então o próprio input mascarado pode
+ *    usar `name="cpf"` diretamente.
+ *
+ * A validação forte (E.164, e-mail, CPF) continua acontecendo no servidor;
+ * aqui há apenas máscara + dicas de formato para feedback imediato.
  */
 export function TenantForm({ tenant, onCancel, onSuccess }: TenantFormProps) {
   const isEdit = Boolean(tenant);
@@ -49,6 +123,9 @@ export function TenantForm({ tenant, onCancel, onSuccess }: TenantFormProps) {
     action,
     TENANT_FORM_INITIAL_STATE,
   );
+
+  const [telefone, setTelefone] = useState(() => formatPhoneBR(tenant?.telefone ?? ""));
+  const [cpf, setCpf] = useState(() => formatCpf(tenant?.cpf ?? ""));
 
   const nomeId = useId();
   const telefoneId = useId();
@@ -87,17 +164,19 @@ export function TenantForm({ tenant, onCancel, onSuccess }: TenantFormProps) {
         </label>
         <input
           id={telefoneId}
-          name="telefone"
+          name="telefoneMascarado"
           type="tel"
           required
           inputMode="tel"
           autoComplete="tel"
-          defaultValue={tenant?.telefone ?? ""}
-          placeholder="+5511999998888"
+          value={telefone}
+          onChange={(e) => setTelefone(formatPhoneBR(e.target.value))}
+          placeholder="+55 (11) 99999-8888"
           className="field tnum"
         />
+        <input type="hidden" name="telefone" value={normalizePhoneE164(telefone)} />
         <p className="mt-1 text-xs text-faint">
-          Formato internacional E.164, ex.: +5511999998888.
+          Formato internacional, ex.: +55 (11) 99999-8888.
         </p>
       </div>
 
@@ -125,7 +204,8 @@ export function TenantForm({ tenant, onCancel, onSuccess }: TenantFormProps) {
           name="cpf"
           type="text"
           inputMode="numeric"
-          defaultValue={tenant?.cpf ?? ""}
+          value={cpf}
+          onChange={(e) => setCpf(formatCpf(e.target.value))}
           placeholder="000.000.000-00"
           className="field tnum"
         />

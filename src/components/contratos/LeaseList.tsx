@@ -57,14 +57,34 @@ function vencimentoLabel(dia: number): string {
 export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [busca, setBusca] = useState("");
 
   const editing = leases.find((l) => l.id === editingId) ?? null;
 
+  const termo = busca.trim().toLowerCase();
+  const filtrados = termo
+    ? leases.filter(
+        (l) =>
+          l.imovel.toLowerCase().includes(termo) ||
+          l.inquilino.toLowerCase().includes(termo),
+      )
+    : leases;
+
   const toolbar = (
-    <div className="flex items-center justify-between">
-      <p className="text-sm text-muted">
-        {leases.length} {leases.length === 1 ? "contrato" : "contratos"}
-      </p>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-3">
+        <p className="text-sm text-muted">
+          {filtrados.length} {filtrados.length === 1 ? "contrato" : "contratos"}
+        </p>
+        <input
+          type="search"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Buscar por imóvel ou inquilino"
+          aria-label="Buscar contratos por imóvel ou inquilino"
+          className="field max-w-xs"
+        />
+      </div>
       {!isCreating && !editing ? (
         <button
           type="button"
@@ -129,10 +149,18 @@ export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
         </div>
       ) : null}
 
+      {leases.length > 0 && filtrados.length === 0 ? (
+        <div className="rounded-card border border-dashed border-line bg-surface px-6 py-12 text-center">
+          <p className="text-sm font-medium text-ink">
+            Nenhum contrato encontrado para &quot;{busca}&quot;.
+          </p>
+        </div>
+      ) : null}
+
       {/* Desktop */}
       <div
         className={`overflow-hidden rounded-card border border-line bg-surface ${
-          leases.length === 0 ? "hidden" : "hidden md:block"
+          filtrados.length === 0 ? "hidden" : "hidden md:block"
         }`}
       >
         <table className="w-full text-sm">
@@ -147,7 +175,7 @@ export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
             </tr>
           </thead>
           <tbody>
-            {leases.map((l) => (
+            {filtrados.map((l) => (
               <tr key={l.id} className="border-b border-line/70 last:border-0 hover:bg-canvas/60">
                 <td className="px-5 py-3.5">
                   <p className="font-medium text-ink">{l.imovel}</p>
@@ -183,8 +211,8 @@ export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
       </div>
 
       {/* Mobile */}
-      <ul className={`flex-col gap-3 md:hidden ${leases.length === 0 ? "hidden" : "flex"}`}>
-        {leases.map((l) => (
+      <ul className={`flex-col gap-3 md:hidden ${filtrados.length === 0 ? "hidden" : "flex"}`}>
+        {filtrados.map((l) => (
           <li key={l.id} className="rounded-card border border-line bg-surface p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

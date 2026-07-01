@@ -113,6 +113,18 @@ export function ChargeDetail({ charge }: ChargeDetailProps) {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+      {/* Cabeçalho de recibo, visível apenas na impressão */}
+      <div className="hidden print:col-span-2 print:mb-4 print:flex print:items-center print:gap-3 print:border-b print:border-line print:pb-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.svg" alt="JH Residências" className="h-10 w-auto" />
+        <div>
+          <p className="text-base font-semibold text-ink">
+            Recibo de cobrança
+          </p>
+          <p className="text-xs text-faint">JH Residências</p>
+        </div>
+      </div>
+
       {/* Coluna principal: identificação + composição do valor */}
       <div className="flex flex-col gap-5">
         <section className="rounded-card border border-line bg-surface p-5">
@@ -176,10 +188,16 @@ export function ChargeDetail({ charge }: ChargeDetailProps) {
             />
           </div>
         </section>
+
+        <div className="print:hidden">
+          <PrimaryButton variant="ghost" onClick={() => window.print()}>
+            Imprimir recibo
+          </PrimaryButton>
+        </div>
       </div>
 
       {/* Coluna lateral: Pix + ações */}
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-5 print:hidden">
         <section className="rounded-card border border-line bg-surface p-5">
           <h2 className="text-sm font-semibold text-ink">Pagamento Pix</h2>
 

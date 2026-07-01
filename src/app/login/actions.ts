@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { z } from "zod";
 
 import { createServerClient } from "@/lib/supabase/server";
@@ -98,8 +99,76 @@ export async function resetPassword(
 
   const supabase = await createServerClient();
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/login/nova-senha`,
+    redirectTo: `${await resolveBaseUrl()}/login/nova-senha`,
   });
+
+  return { ok: true, error: null };
+}
+
+/**
+ * Resolve a URL base do app para montar links de redirect (ex.: e-mail de
+ * recuperação de senha). Deriva do header `origin`/`host` da própria
+ * requisição (robusto em qualquer ambiente: local, preview, produção), com
+ * fallback para `APP_BASE_URL` quando o header não estiver disponível.
+ */
+async function resolveBaseUrl(): Promise<string> {
+  const headerList = await headers();
+
+  const origin = headerList.get("origin");
+  if (origin) return origin;
+
+  const host = headerList.get("host");
+  if (host) {
+    const protocol = headerList.get("x-forwarded-proto") ?? "https";
+    return `${protocol}://${host}`;
+  }
+
+  return process.env.APP_BASE_URL ?? "";
+}
+
+export interface NovaSenhaState {
+  ok: boolean | null;
+  error: string | null;
+}
+
+const novaSenhaSchema = z
+  .object({
+    senha: z.string().min(6, "Senha deve ter ao menos 6 caracteres."),
+    confirmar: z.string(),
+  })
+  .refine((d) => d.senha === d.confirmar, {
+    message: "As senhas não conferem.",
+    path: ["confirmar"],
+  });
+
+/**
+ * Define a nova senha durante o fluxo de recuperação. Quando o usuário chega
+ * pelo link do e-mail do Supabase, a sessão de recuperação já está presente
+ * nos cookies (trocada pelo middleware/callback do `@supabase/ssr`), então
+ * basta chamar `updateUser` com o client autenticado do request.
+ */
+export async function atualizarSenhaRecuperacao(
+  _prevState: NovaSenhaState,
+  formData: FormData,
+): Promise<NovaSenhaState> {
+  const parsed = novaSenhaSchema.safeParse({
+    senha: formData.get("senha"),
+    confirmar: formData.get("confirmar"),
+  });
+
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
+  }
+
+  const supabase = await createServerClient();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.senha });
+
+  if (error) {
+    return {
+      ok: false,
+      error: "O link expirou ou é inválido. Solicite um novo.",
+    };
+  }
 
   return { ok: true, error: null };
 }

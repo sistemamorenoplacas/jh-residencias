@@ -1,6 +1,7 @@
 /**
- * Dados de exemplo para desenvolver o painel antes da integração Supabase.
- * Substituídos por queries reais na Fase 2. NÃO usar em produção.
+ * Dados de exemplo para desenvolver o painel antes da integração Supabase,
+ * mais o cálculo puro de KPIs (`computeKpis`) reutilizado com dados reais.
+ * `MOCK_CHARGES` é ilustrativo — NÃO usar em produção.
  */
 
 import type { ChargeRow } from "./types";
@@ -35,7 +36,3 @@ export function computeKpis(rows: ChargeRow[]): DashboardKpis {
     recebidoPct: total === 0 ? 0 : Math.round((recebido / total) * 100),
   };
 }
-
-/** Série pequena para sparklines dos KPIs (últimos 6 meses, ilustrativo). */
-export const SPARK_RECEBIDO = [62, 58, 71, 65, 80, 74];
-export const SPARK_INADIMPLENCIA = [12, 18, 9, 22, 15, 19];

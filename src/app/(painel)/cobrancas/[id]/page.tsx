@@ -70,6 +70,30 @@ function calcularValor(row: ChargeDetailRow, hoje: Date): ValorDevido {
   );
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  try {
+    const { id } = await params;
+    const supabase = await createServerClient();
+    const { data } = await supabase
+      .from("charges")
+      .select("leases!inner(tenants!inner(nome))")
+      .eq("id", id)
+      .single();
+
+    const inquilino =
+      (data as unknown as { leases: { tenants: { nome: string } | null } | null } | null)
+        ?.leases?.tenants?.nome ?? "Cobrança";
+
+    return { title: `${inquilino} — Cobrança | JH Residências` };
+  } catch {
+    return { title: "Detalhe da cobrança — JH Residências" };
+  }
+}
+
 export default async function CobrancaDetalhePage({
   params,
 }: {

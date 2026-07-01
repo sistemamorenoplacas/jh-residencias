@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { AppShell } from "@/components/shell/AppShell";
-
-export const metadata: Metadata = { title: "Visão Geral — JH Residências" };
 import { MetricCard } from "@/components/ui/MetricCard";
-import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { ChargesTable } from "@/components/charges/ChargesTable";
 import { formatBRL } from "@/lib/money";
 import { formatCompetencia } from "@/lib/dates";
 import { competenciaAtual } from "@/lib/charge-generation";
 import { buscarChargeRowsDoMes } from "@/lib/charges-query";
-import { computeKpis, SPARK_RECEBIDO, SPARK_INADIMPLENCIA } from "@/lib/mock";
+import { buscarTendencias6Meses } from "@/lib/dashboard";
+import { computeKpis } from "@/lib/mock";
 import type { ChargeRow } from "@/lib/types";
+
+export const metadata: Metadata = { title: "Visão Geral — JH Residências" };
 
 const IconWallet = (
   <svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -50,7 +51,10 @@ async function carregarCobrancasDoMes(): Promise<ChargeRow[]> {
 
 export default async function PainelPage() {
   const hoje = new Date();
-  const charges = await carregarCobrancasDoMes();
+  const [charges, tendencias] = await Promise.all([
+    carregarCobrancasDoMes(),
+    buscarTendencias6Meses(hoje),
+  ]);
   const kpis = computeKpis(charges);
   const recentes = charges.slice(0, 5);
   const subtitle = formatCompetencia(competenciaAtual(hoje));
@@ -60,10 +64,14 @@ export default async function PainelPage() {
       title="Visão geral"
       subtitle={subtitle}
       actions={
-        <PrimaryButton icon={IconPlus}>
+        <Link
+          href="/cobrancas"
+          className="inline-flex items-center gap-2 rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-dark"
+        >
+          {IconPlus}
           <span className="hidden sm:inline">Nova cobrança</span>
           <span className="sm:hidden">Nova</span>
-        </PrimaryButton>
+        </Link>
       }
     >
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
@@ -87,23 +95,23 @@ export default async function PainelPage() {
           value={formatBRL(kpis.pendenteCentavos)}
           icon={IconClock}
           tone="text-pendente"
-          spark={SPARK_RECEBIDO}
+          spark={tendencias.recebido}
         />
         <MetricCard
           label="Inadimplência"
           value={`${kpis.inadimplenciaPct}%`}
           icon={IconAlert}
           tone="text-vencido"
-          spark={SPARK_INADIMPLENCIA}
+          spark={tendencias.inadimplencia}
         />
       </section>
 
       <section className="mt-8">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-base font-semibold tracking-tight">Cobranças recentes</h2>
-          <a href="/cobrancas" className="text-sm font-medium text-brand hover:text-brand-dark">
+          <Link href="/cobrancas" className="text-sm font-medium text-brand hover:text-brand-dark">
             Ver todas
-          </a>
+          </Link>
         </div>
         {recentes.length > 0 ? (
           <ChargesTable rows={recentes} />
