@@ -32,7 +32,7 @@ export default function RecuperarSenhaPage() {
           <p className="mt-0.5 text-sm text-muted">Recuperação de senha</p>
         </div>
 
-        <div className="card-surface p-6 shadow-[0_1px_2px_rgba(20,32,25,0.04),0_8px_24px_-12px_rgba(20,32,25,0.12)]">
+        <div className="card-surface p-6">
           {state.ok ? (
             <div className="flex flex-col items-center gap-4 py-4 text-center">
               <span className="flex size-12 items-center justify-center rounded-full bg-brand-tint">

@@ -45,7 +45,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </p>
         ) : null}
 
-        <div className="card-surface p-6 shadow-[0_1px_2px_rgba(20,32,25,0.04),0_8px_24px_-12px_rgba(20,32,25,0.12)]">
+        <div className="card-surface p-6">
           <LoginForm redirectTo={target} />
         </div>
 
