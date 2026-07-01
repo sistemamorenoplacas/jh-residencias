@@ -20,23 +20,14 @@ function safeRedirectTo(raw: string | undefined): string {
   return "/painel";
 }
 
-const IconCheck = (
-  <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 6 9 17l-5-5" />
-  </svg>
-);
-
 const IconHouse = (
-  <svg className="size-72" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+  <svg className="size-[26rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 10.5 12 4l9 6.5" /><path d="M5 9.5V20h14V9.5" /><path d="M10 20v-6h4v6" />
   </svg>
 );
 
-const BENEFICIOS = [
-  "Cobranças por Pix geradas automaticamente",
-  "Lembretes e confirmações no WhatsApp",
-  "Controle de inadimplência em tempo real",
-];
+const DOT_GRID =
+  "radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)";
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await getSession();
@@ -48,64 +39,49 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <main className="grid min-h-dvh lg:grid-cols-2">
-      {/* Painel de marca — só no desktop */}
-      <aside
-        className="relative hidden overflow-hidden p-12 text-white lg:flex lg:flex-col lg:justify-between"
-        style={{ background: "linear-gradient(160deg,#041a3d 0%,#052351 55%,#0e3a75 100%)" }}
-      >
-        <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/60">
-          JH Residências
-        </p>
+    <main
+      className="relative grid min-h-dvh place-items-center overflow-hidden px-4 py-10"
+      style={{ background: "linear-gradient(160deg,#041a3d 0%,#052351 52%,#0e3a75 100%)" }}
+    >
+      {/* Grade de pontos */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ backgroundImage: DOT_GRID, backgroundSize: "22px 22px" }}
+      />
+      {/* Brilho ambiente */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-80"
+        style={{ background: "radial-gradient(60% 100% at 50% 0%, rgba(43,98,181,0.35), transparent 70%)" }}
+      />
+      {/* Casa decorativa */}
+      <div className="pointer-events-none absolute -bottom-24 -right-24 text-white/[0.04]">
+        {IconHouse}
+      </div>
 
-        <div className="relative z-10 max-w-md">
-          <h1 className="serif text-4xl leading-tight xl:text-[2.75rem]">
+      <div className="relative z-10 w-full max-w-[400px]">
+        <div className="mb-7 flex flex-col items-center text-center">
+          <div className="rounded-3xl bg-white p-4 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] ring-1 ring-white/15">
+            <img src="/logo.svg" alt="JH Residências" className="h-24 w-auto" />
+          </div>
+          <h1 className="serif mt-6 text-2xl text-white">Bem-vindo de volta</h1>
+          <p className="mt-1.5 text-sm text-white/55">
             Gerencie seus aluguéis num só lugar.
-          </h1>
-          <p className="mt-4 text-white/70">
-            Do contrato à cobrança paga — sem planilha, sem correria.
           </p>
-          <ul className="mt-8 flex flex-col gap-3">
-            {BENEFICIOS.map((b) => (
-              <li key={b} className="flex items-center gap-3 text-sm text-white/90">
-                <span className="text-brand-bright">{IconCheck}</span>
-                {b}
-              </li>
-            ))}
-          </ul>
         </div>
 
-        <p className="relative z-10 text-xs text-white/40">
-          © {new Date().getFullYear()} JH Residências
+        {sessionExpired ? (
+          <p className="mb-4 rounded-[10px] border border-pendente/40 bg-pendente-tint px-3 py-2.5 text-center text-sm font-medium text-pendente">
+            Sua sessão expirou. Faça login novamente.
+          </p>
+        ) : null}
+
+        <div className="card-surface p-6 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.7)] sm:p-7">
+          <LoginForm redirectTo={target} />
+        </div>
+
+        <p className="mt-6 text-center text-xs text-white/40">
+          Acesso restrito ao proprietário.
         </p>
-
-        <div className="pointer-events-none absolute -bottom-16 -right-16 text-white/[0.06]">
-          {IconHouse}
-        </div>
-      </aside>
-
-      {/* Lado do formulário */}
-      <div className="flex items-center justify-center bg-canvas px-4 py-10">
-        <div className="w-full max-w-[400px]">
-          <div className="mb-8 flex flex-col items-center text-center">
-            <img src="/logo.svg" alt="JH Residências" className="h-36 w-auto" />
-            <p className="-mt-2 text-sm text-muted">Painel administrativo</p>
-          </div>
-
-          {sessionExpired ? (
-            <p className="mb-4 rounded-[10px] border border-pendente/30 bg-pendente-tint px-3 py-2.5 text-center text-sm font-medium text-pendente">
-              Sua sessão expirou. Faça login novamente.
-            </p>
-          ) : null}
-
-          <div className="card-surface p-6 sm:p-7">
-            <LoginForm redirectTo={target} />
-          </div>
-
-          <p className="mt-6 text-center text-xs text-faint">
-            Acesso restrito ao proprietário.
-          </p>
-        </div>
       </div>
     </main>
   );
