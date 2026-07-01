@@ -165,22 +165,7 @@ export default async function CobrancasPage({
           </p>
         </div>
       ) : (
-        <>
-          <ChargesTable rows={rows} />
-          <ul className="mt-5 grid grid-cols-1 gap-1 text-sm sm:grid-cols-2 lg:grid-cols-3">
-            {rows.map((r) => (
-              <li key={r.id}>
-                <Link
-                  href={`/cobrancas/${r.id}`}
-                  className="flex items-center justify-between rounded-pill px-3 py-2 text-brand transition-colors hover:bg-brand-tint"
-                >
-                  <span className="truncate">{r.inquilino}</span>
-                  <span className="ml-2 shrink-0 font-medium">Abrir →</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </>
+        <ChargesTable rows={rows} />
       )}
     </AppShell>
   );

@@ -63,7 +63,7 @@ export function ChargesTable({ rows }: ChargesTableProps) {
                   <div className="flex items-center gap-3">
                     <Avatar nome={r.inquilino} />
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-ink">{r.inquilino}</p>
+                      <Link href={`/cobrancas/${r.id}`} className="block truncate font-medium text-ink transition-colors hover:text-brand hover:underline">{r.inquilino}</Link>
                       <p className="truncate text-xs text-faint">{r.imovel}</p>
                     </div>
                   </div>
@@ -95,7 +95,7 @@ export function ChargesTable({ rows }: ChargesTableProps) {
               <div className="flex items-center gap-3">
                 <Avatar nome={r.inquilino} />
                 <div className="min-w-0">
-                  <p className="truncate font-medium text-ink">{r.inquilino}</p>
+                  <Link href={`/cobrancas/${r.id}`} className="block truncate font-medium text-ink transition-colors hover:text-brand hover:underline">{r.inquilino}</Link>
                   <p className="truncate text-xs text-faint">{r.imovel}</p>
                 </div>
               </div>
