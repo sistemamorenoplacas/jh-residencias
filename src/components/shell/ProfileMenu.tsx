@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 import { signOut } from "@/app/login/actions";
 import { NomeForm, SenhaForm } from "@/app/(painel)/perfil/PerfilForm";
@@ -58,7 +59,8 @@ export function ProfileMenu({ user }: { user?: SidebarUser }) {
         </form>
       </div>
 
-      {open ? (
+      {open && typeof document !== "undefined"
+        ? createPortal(
         <div
           className="fixed inset-0 z-50 grid place-items-center bg-ink/40 p-4 backdrop-blur-sm"
           role="dialog"
@@ -97,8 +99,10 @@ export function ProfileMenu({ user }: { user?: SidebarUser }) {
             <p className="mb-3 text-sm font-semibold text-ink">Alterar senha</p>
             <SenhaForm />
           </div>
-        </div>
-      ) : null}
+        </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }
