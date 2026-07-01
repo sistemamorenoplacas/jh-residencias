@@ -116,7 +116,7 @@ export default async function PainelPage() {
       {/* Banner */}
       <section
         className="rise relative mb-5 overflow-hidden rounded-card px-7 py-8 text-white"
-        style={{ background: "linear-gradient(115deg,#1e1b4b 0%,#312e81 55%,#4338ca 100%)" }}
+        style={{ background: "linear-gradient(115deg,#041a3d 0%,#052351 55%,#0e3a75 100%)" }}
       >
         <div className="relative z-10 max-w-md">
           <h2 className="serif text-2xl leading-tight lg:text-[28px]">
@@ -219,7 +219,7 @@ export default async function PainelPage() {
           <div className="card-surface rise p-5">
             <p className="text-sm font-semibold text-ink">Resumo do mês</p>
             <div className="mt-2 divide-y divide-line">
-              <SummaryRow label="A receber" value={formatBRL(kpis.aReceberCentavos)} dot="#4f46e5" />
+              <SummaryRow label="A receber" value={formatBRL(kpis.aReceberCentavos)} dot="#0e3a75" />
               <SummaryRow label="Recebido" value={formatBRL(kpis.recebidoCentavos)} dot="#15a34a" />
               <SummaryRow label="Pendente + vencido" value={formatBRL(kpis.pendenteCentavos)} dot="#d97706" />
             </div>
