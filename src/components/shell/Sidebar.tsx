@@ -96,7 +96,7 @@ export function Sidebar({ user }: { user?: SidebarUser }) {
       {/* Logo centralizada no topo (cabeçalho da marca) */}
       <div className="mb-2 flex flex-col items-center">
         <img src="/logo.svg" alt="JH Residências" className="h-40 w-auto max-w-full" />
-        <p className="-mt-2 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-faint">
+        <p className="-mt-8 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-faint">
           Sistema de Gestão
         </p>
       </div>
