@@ -308,3 +308,33 @@ export async function cancelarCobranca(
     return { ok: false, error: mensagemErro(error) };
   }
 }
+
+export async function marcarPagoManualmente(
+  chargeId: string,
+): Promise<CobrancaActionState> {
+  const user = await requireUser();
+
+  if (!chargeId) return { ok: false, error: "Cobrança inválida." };
+
+  try {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("charges")
+      .update({ status: "pago", pago_em: new Date().toISOString() })
+      .eq("id", chargeId)
+      .eq("owner_id", user.id)
+      .in("status", ["pendente", "vencido"])
+      .select("*");
+
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) {
+      return { ok: false, error: "Cobrança não encontrada ou já processada." };
+    }
+
+    revalidatePath("/cobrancas");
+    revalidatePath(`/cobrancas/${chargeId}`);
+    return { ok: true, error: null };
+  } catch (error: unknown) {
+    return { ok: false, error: mensagemErro(error) };
+  }
+}

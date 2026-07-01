@@ -17,6 +17,7 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "JH Residências",
   description: "Cobrança de aluguel — painel administrativo",
+  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
 };
 
 export default function RootLayout({
