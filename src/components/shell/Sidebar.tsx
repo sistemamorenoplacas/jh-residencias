@@ -98,9 +98,6 @@ export function Sidebar({ user }: { user?: SidebarUser }) {
         <img src="/logo.svg" alt="JH Residências" className="h-24 w-auto" />
       </div>
 
-      {/* Perfil + botão sair; configurações abrem em pop-up */}
-      <ProfileMenu user={user} />
-
       <nav className="flex flex-1 flex-col gap-1">
         {NAV.map((item) => {
           const active = isActive(pathname, item.href);
@@ -127,6 +124,10 @@ export function Sidebar({ user }: { user?: SidebarUser }) {
         })}
       </nav>
 
+      <div className="mb-3 h-px bg-line" />
+
+      {/* Perfil + botão sair no final do menu; configurações abrem em pop-up */}
+      <ProfileMenu user={user} />
     </aside>
   );
 }
