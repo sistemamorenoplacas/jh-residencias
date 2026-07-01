@@ -18,18 +18,20 @@ export async function AppShell({ title, subtitle, actions, children }: AppShellP
       <Sidebar user={user ?? undefined} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between gap-4 border-b border-line bg-surface/80 px-5 py-4 backdrop-blur lg:px-8">
+        <header className="flex items-end justify-between gap-4 border-b border-line-strong bg-surface/70 px-5 py-5 backdrop-blur lg:px-9 lg:py-6">
           <div className="flex items-center gap-3">
             <img src="/logo.svg" alt="JH Residências" className="h-8 w-auto lg:hidden" />
-            <div>
-              <h1 className="text-lg font-semibold tracking-tight lg:text-xl">{title}</h1>
-              {subtitle ? <p className="text-sm text-muted">{subtitle}</p> : null}
+            <div className="min-w-0">
+              {subtitle ? <p className="kicker mb-1.5">{subtitle}</p> : null}
+              <h1 className="serif text-[1.6rem] leading-none text-ink lg:text-[2rem]">
+                {title}
+              </h1>
             </div>
           </div>
-          {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+          {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
         </header>
 
-        <main className="flex-1 px-5 py-6 pb-24 lg:px-8 lg:pb-8">{children}</main>
+        <main className="flex-1 px-5 py-7 pb-24 lg:px-9 lg:pb-9">{children}</main>
       </div>
 
       <MobileNav />

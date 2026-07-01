@@ -1,47 +1,69 @@
 @import "tailwindcss";
 
 /*
-  JH Residências — Design system "Ledger"
-  Sidebar escura + conteúdo claro + verde. Valores em mono tabular.
+  JH Residências — Design system "Ledger Editorial"
+  ------------------------------------------------------------------
+  Broadsheet financeiro + precisão de planta arquitetônica.
+  Papel quente em vez de branco frio · esmeralda estrutural · âmbar-sinal ·
+  hairlines de blueprint · números-herói em serifa (Fraunces) · dígitos
+  tabulares em mono (IBM Plex) · corpo em grotesca quente (Hanken).
 */
 
 @theme {
-  /* Sidebar */
-  --color-sidebar: #0e1a14;
-  --color-sidebar-text: #9db0a6;
-  --color-sidebar-active: #149058;
+  /* Tipografia */
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
 
-  /* Brand */
-  --color-brand: #149058;
-  --color-brand-dark: #0e7a49;
-  --color-brand-tint: #e5f4ec;
+  /* Sidebar — tinta-floresta profunda e quente */
+  --color-sidebar: #14201a;
+  --color-sidebar-elevated: #1b2a22;
+  --color-sidebar-text: #93a79b;
+  --color-sidebar-active: #37d98a;
 
-  /* Superfícies */
-  --color-canvas: #f3f5f1;
-  --color-surface: #ffffff;
+  /* Marca — esmeralda aprofundada */
+  --color-brand: #0e7a4b;
+  --color-brand-dark: #0a5d39;
+  --color-brand-bright: #13a866;
+  --color-brand-tint: #e2efe6;
 
-  /* Texto / linhas */
-  --color-ink: #142019;
-  --color-muted: #677570;
-  --color-faint: #9aa5a0;
-  --color-line: #eceeea;
+  /* Sinal — âmbar editorial (destaques, atenção) */
+  --color-signal: #b5771b;
+  --color-signal-tint: #f4e9d1;
+
+  /* Superfícies — papel quente */
+  --color-canvas: #f1ede4;
+  --color-surface: #fbf9f4;
+  --color-raised: #ffffff;
+
+  /* Texto / linhas — tinta quente */
+  --color-ink: #181510;
+  --color-ink-soft: #37322a;
+  --color-muted: #6b6459;
+  --color-faint: #a39c8e;
+  --color-line: #e4ded1;
+  --color-line-strong: #d6cfbf;
 
   /* Status */
-  --color-pago: #149058;
-  --color-pago-tint: #e5f4ec;
-  --color-pendente: #a06a0e;
-  --color-pendente-tint: #fbf1dc;
-  --color-vencido: #c0392b;
-  --color-vencido-tint: #fbeae7;
-
-  /* Tipografia */
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
+  --color-pago: #0e7a4b;
+  --color-pago-tint: #e2efe6;
+  --color-pendente: #b5771b;
+  --color-pendente-tint: #f4e9d1;
+  --color-vencido: #b23524;
+  --color-vencido-tint: #f6e3dd;
 
   /* Raio */
   --radius-pill: 999px;
-  --radius-card: 16px;
-  --radius-shell: 18px;
+  --radius-card: 14px;
+  --radius-shell: 20px;
+
+  /* Sombra em camadas (profundidade sutil) */
+  --shadow-card: 0 1px 2px rgba(24, 21, 16, 0.04), 0 10px 26px -18px rgba(24, 21, 16, 0.22);
+  --shadow-raised: 0 2px 5px rgba(24, 21, 16, 0.05), 0 22px 48px -26px rgba(24, 21, 16, 0.32);
+
+  /* Motion */
+  --duration-fast: 150ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -54,28 +76,100 @@ html {
 }
 
 body {
+  position: relative;
   background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
 
-/* Algarismos tabulares para valores monetários */
+/* Grão sutil sobre todo o app — atmosfera de papel, não superfície chapada. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* =========================================================================
+   Tipografia editorial
+   ========================================================================= */
+
+/* Título/serifa — números-herói e cabeçalhos com caráter. */
+.serif {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Número-herói (KPI dominante). Serifa, apertado, com feição financeira. */
+.num-hero {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: lining-nums;
+  line-height: 0.92;
+}
+
+/* Algarismos tabulares mono — valores em tabelas/listas. */
 .tnum {
   font-family: var(--font-mono);
   font-feature-settings: "tnum" 1;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Kicker editorial — rótulo de seção: mono, caixa-alta, com traço-âmbar. */
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.kicker::before {
+  content: "";
+  width: 1.25rem;
+  height: 1px;
+  background: var(--color-signal);
+}
+
+/* Índice de seção (01 / 02) estilo revista. */
+.section-index {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--color-faint);
 }
 
 /* =========================================================================
-   Classes utilitárias compartilhadas (Fundação)
-   Reutilizadas pelos agentes de UI. Usam os tokens --color-* já definidos.
+   Superfícies e componentes (Fundação)
    ========================================================================= */
 
-/* Superfície de cartão padrão */
+/* Cartão padrão — hairline + sombra em camadas. */
 .card-surface {
+  position: relative;
   background: var(--color-surface);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* Painel-herói com grelha de blueprint arquitetônica. */
+.blueprint {
+  background-image:
+    linear-gradient(var(--color-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: -1px -1px;
 }
 
 /* Rótulo de formulário */
@@ -93,13 +187,13 @@ body {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   color: var(--color-ink);
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
+  background: var(--color-raised);
+  border: 1px solid var(--color-line-strong);
   border-radius: 10px;
   outline: none;
   transition:
-    border-color var(--duration-fast, 150ms) ease,
-    box-shadow var(--duration-fast, 150ms) ease;
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
 }
 
 .field::placeholder {
@@ -128,12 +222,12 @@ body {
   font-weight: 500;
   color: var(--color-ink);
   background: transparent;
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-line-strong);
   border-radius: var(--radius-pill);
   cursor: pointer;
   transition:
-    background-color var(--duration-fast, 150ms) ease,
-    border-color var(--duration-fast, 150ms) ease;
+    background-color var(--duration-fast) ease,
+    border-color var(--duration-fast) ease;
 }
 
 .btn-ghost:hover {
@@ -161,16 +255,17 @@ body {
 .table-base thead th {
   padding: 0.625rem 1rem;
   text-align: left;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-muted);
-  border-bottom: 1px solid var(--color-line);
+  color: var(--color-faint);
+  border-bottom: 1px solid var(--color-line-strong);
 }
 
 .table-base tbody td {
-  padding: 0.75rem 1rem;
+  padding: 0.8125rem 1rem;
   color: var(--color-ink);
   border-bottom: 1px solid var(--color-line);
 }
@@ -214,4 +309,29 @@ body {
 .badge-cancelado {
   color: var(--color-muted);
   background: var(--color-line);
+}
+
+/* =========================================================================
+   Motion — revelação escalonada no carregamento
+   ========================================================================= */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.7s var(--ease-out-expo) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
 }

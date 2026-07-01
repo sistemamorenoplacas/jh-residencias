@@ -1,13 +1,23 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Fraunces, Hanken_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
+/** Serifa editorial com caráter — títulos e algarismos-herói (estilo broadsheet). */
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
+/** Grotesca limpa e levemente quente — corpo, navegação, rótulos. */
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
+/** Mono tabular — algarismos monetários alinhados em tabelas. */
 const plexMono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
   subsets: ["latin"],
@@ -28,7 +38,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${jakarta.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${hanken.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">{children}</body>
     </html>

@@ -74,27 +74,34 @@ export default async function PainelPage() {
         </Link>
       }
     >
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
-        <MetricCard
-          label="A receber no mês"
-          value={formatBRL(kpis.aReceberCentavos)}
-          icon={IconWallet}
-          tone="text-ink"
-          hint={`${charges.length} ${charges.length === 1 ? "cobrança" : "cobranças"}`}
-        />
+      {/* Bento editorial: herói dominante + trilho de indicadores */}
+      <section className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <MetricCard
+            variant="hero"
+            label="A receber no mês"
+            value={formatBRL(kpis.aReceberCentavos)}
+            icon={IconWallet}
+            tone="text-brand"
+            hint={`${charges.length} ${charges.length === 1 ? "cobrança em aberto" : "cobranças no mês"}`}
+          />
+        </div>
         <MetricCard
           label="Recebido"
           value={formatBRL(kpis.recebidoCentavos)}
           icon={IconCheck}
           tone="text-brand"
           progress={kpis.recebidoPct}
-          hint={`${kpis.recebidoPct}% do total`}
+          hint="do total do mês"
         />
+      </section>
+
+      <section className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <MetricCard
-          label="Pendente"
+          label="Pendente + Vencido"
           value={formatBRL(kpis.pendenteCentavos)}
           icon={IconClock}
-          tone="text-pendente"
+          tone="text-signal"
           spark={tendencias.recebido}
         />
         <MetricCard
@@ -106,19 +113,25 @@ export default async function PainelPage() {
         />
       </section>
 
-      <section className="mt-8">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-base font-semibold tracking-tight">Cobranças recentes</h2>
-          <Link href="/cobrancas" className="text-sm font-medium text-brand hover:text-brand-dark">
-            Ver todas
+      <section className="mt-10">
+        <div className="mb-4 flex items-end justify-between border-b border-line-strong pb-3">
+          <div className="flex items-center gap-3">
+            <span className="section-index">02</span>
+            <h2 className="serif text-xl text-ink">Cobranças recentes</h2>
+          </div>
+          <Link
+            href="/cobrancas"
+            className="font-mono text-[11px] uppercase tracking-wider text-brand transition-colors hover:text-brand-dark"
+          >
+            Ver todas →
           </Link>
         </div>
         {recentes.length > 0 ? (
           <ChargesTable rows={recentes} />
         ) : (
-          <div className="rounded-card border border-dashed border-line bg-surface px-6 py-12 text-center">
-            <p className="text-sm font-medium text-ink">Nenhuma cobrança neste mês</p>
-            <p className="mt-1 text-sm text-muted">
+          <div className="card-surface blueprint px-6 py-14 text-center">
+            <p className="serif text-lg text-ink">Nenhuma cobrança neste mês</p>
+            <p className="mt-1.5 text-sm text-muted">
               As cobranças do mês corrente aparecerão aqui assim que forem geradas.
             </p>
           </div>

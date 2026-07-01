@@ -92,43 +92,72 @@ export function Sidebar({ user }: { user?: SidebarUser }) {
   const emailDisplay = user?.email ?? "Administrador";
 
   return (
-    <aside className="sticky top-0 hidden h-dvh w-[212px] shrink-0 flex-col bg-sidebar px-3 py-5 lg:flex">
-      <div className="flex items-center px-2.5 pb-6">
-        <img src="/logo.svg" alt="JH Residências" className="h-12 w-auto" />
+    <aside className="sticky top-0 hidden h-dvh w-[232px] shrink-0 flex-col bg-sidebar px-4 py-6 lg:flex">
+      {/* Marca + wordmark */}
+      <div className="px-1.5 pb-6">
+        <img src="/logo.svg" alt="JH Residências" className="h-11 w-auto" />
+        <p className="mt-3 font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-sidebar-text/70">
+          Gestão de Aluguéis
+        </p>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1">
-        {NAV.map((item) => {
+      <div className="mb-3 h-px bg-white/10" />
+
+      <p className="mb-2 px-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-sidebar-text/50">
+        Navegação
+      </p>
+
+      <nav className="flex flex-1 flex-col gap-0.5">
+        {NAV.map((item, i) => {
           const active = isActive(pathname, item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-sm font-medium transition-colors ${
+              className={`group relative flex items-center gap-3 rounded-lg py-2.5 pl-4 pr-2.5 text-[13px] font-medium tracking-tight transition-colors ${
                 active
-                  ? "bg-brand text-white"
-                  : "text-sidebar-text hover:bg-white/5 hover:text-white"
+                  ? "bg-sidebar-elevated text-white"
+                  : "text-sidebar-text hover:bg-white/[0.04] hover:text-white"
               }`}
             >
-              {item.icon}
-              {item.label}
+              {/* Marcador de ativo — barra vertical (referência blueprint) */}
+              <span
+                className={`absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-sidebar-active transition-opacity ${
+                  active ? "opacity-100" : "opacity-0"
+                }`}
+              />
+              <span
+                className={
+                  active
+                    ? "text-sidebar-active"
+                    : "text-sidebar-text/70 transition-colors group-hover:text-sidebar-text"
+                }
+              >
+                {item.icon}
+              </span>
+              <span className="flex-1">{item.label}</span>
+              <span className="font-mono text-[10px] tabular-nums text-sidebar-text/40">
+                {String(i + 1).padStart(2, "0")}
+              </span>
             </Link>
           );
         })}
       </nav>
 
+      <div className="mt-3 h-px bg-white/10" />
+
       <Link
         href="/perfil"
-        className={`mt-2 flex items-center gap-3 rounded-xl px-2.5 py-2.5 transition-colors hover:bg-white/5 ${
-          isActive(pathname, "/perfil") ? "bg-white/10" : ""
+        className={`mt-3 flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-white/[0.05] ${
+          isActive(pathname, "/perfil") ? "bg-white/[0.07]" : ""
         }`}
       >
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sidebar-active/15 font-serif text-sm font-semibold text-sidebar-active">
           {inicial}
         </span>
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-white">Meu perfil</p>
-          <p className="truncate text-xs text-sidebar-text">{emailDisplay}</p>
+          <p className="truncate text-[13px] font-medium text-white">Meu perfil</p>
+          <p className="truncate font-mono text-[10px] text-sidebar-text/70">{emailDisplay}</p>
         </div>
       </Link>
     </aside>
