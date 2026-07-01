@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = { title: "Cobranças — JH Residências" };
 
 import { AppShell } from "@/components/shell/AppShell";
 import { ChargesTable } from "@/components/charges/ChargesTable";

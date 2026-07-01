@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 interface LoginPageProps {
-  searchParams: Promise<{ redirectTo?: string }>;
+  searchParams: Promise<{ redirectTo?: string; sessionExpired?: string }>;
 }
 
 function safeRedirectTo(raw: string | undefined): string {
@@ -22,7 +22,7 @@ function safeRedirectTo(raw: string | undefined): string {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await getSession();
-  const { redirectTo } = await searchParams;
+  const { redirectTo, sessionExpired } = await searchParams;
   const target = safeRedirectTo(redirectTo);
 
   if (session) {
@@ -38,6 +38,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Painel administrativo de cobranças
           </p>
         </div>
+
+        {sessionExpired ? (
+          <p className="mb-4 rounded-[10px] border border-pendente/30 bg-pendente-tint px-3 py-2.5 text-sm font-medium text-pendente text-center">
+            Sua sessão expirou. Faça login novamente.
+          </p>
+        ) : null}
 
         <div className="card-surface p-6 shadow-[0_1px_2px_rgba(20,32,25,0.04),0_8px_24px_-12px_rgba(20,32,25,0.12)]">
           <LoginForm redirectTo={target} />

@@ -73,3 +73,33 @@ export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
   redirect("/login");
 }
+
+export interface RecuperarState {
+  ok: boolean | null;
+  error: string | null;
+}
+
+const emailSchema = z.object({
+  email: z.string().email("Informe um e-mail válido."),
+});
+
+/**
+ * Envia o link de redefinição de senha via Supabase Auth.
+ * Retorna sucesso mesmo quando o e-mail não existe (evita user-enumeration).
+ */
+export async function resetPassword(
+  _prevState: RecuperarState,
+  formData: FormData,
+): Promise<RecuperarState> {
+  const parsed = emailSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "E-mail inválido." };
+  }
+
+  const supabase = await createServerClient();
+  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/login/nova-senha`,
+  });
+
+  return { ok: true, error: null };
+}

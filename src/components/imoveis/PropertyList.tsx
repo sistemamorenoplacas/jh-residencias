@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { DbProperty, PropertyTipoDb } from "@/lib/db-types";
 import { excluirImovel } from "@/app/(painel)/imoveis/actions";
 import { PropertyForm } from "./PropertyForm";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 interface PropertyListProps {
   properties: ReadonlyArray<DbProperty>;
@@ -67,6 +68,15 @@ const IconHome = (
 
 export function PropertyList({ properties }: PropertyListProps) {
   const [editing, setEditing] = useState<DbProperty | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<DbProperty | null>(null);
+  const [busca, setBusca] = useState("");
+
+  const filtrados = busca.trim()
+    ? properties.filter((p) =>
+        p.nome.toLowerCase().includes(busca.toLowerCase()) ||
+        p.endereco.toLowerCase().includes(busca.toLowerCase()),
+      )
+    : properties;
 
   if (properties.length === 0) {
     return (
@@ -86,72 +96,114 @@ export function PropertyList({ properties }: PropertyListProps) {
 
   return (
     <>
-      <div className="card-surface overflow-hidden">
-        {/* Tabela em telas médias+ */}
-        <table className="table-base hidden sm:table">
-          <thead>
-            <tr>
-              <th scope="col">Nome</th>
-              <th scope="col">Endereço</th>
-              <th scope="col">Tipo</th>
-              <th scope="col" className="text-right">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {properties.map((property) => (
-              <tr key={property.id}>
-                <td className="font-medium text-ink">{property.nome}</td>
-                <td className="text-muted">{property.endereco}</td>
-                <td>
-                  <span className="badge bg-canvas text-muted">{TIPO_LABEL[property.tipo]}</span>
-                </td>
-                <td>
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      className="btn-ghost px-2.5 py-1.5"
-                      onClick={() => setEditing(property)}
-                      aria-label={`Editar ${property.nome}`}
-                    >
-                      {IconPencil}
-                      <span className="hidden md:inline">Editar</span>
-                    </button>
-                    <DeleteButton id={property.id} nome={property.nome} />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Cards empilhados no mobile */}
-        <ul className="divide-y divide-line sm:hidden">
-          {properties.map((property) => (
-            <li key={property.id} className="flex items-start justify-between gap-3 p-4">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-ink">{property.nome}</p>
-                <p className="mt-0.5 truncate text-sm text-muted">{property.endereco}</p>
-                <span className="badge mt-2 bg-canvas text-muted">
-                  {TIPO_LABEL[property.tipo]}
-                </span>
-              </div>
-              <div className="flex shrink-0 items-center gap-1.5">
-                <button
-                  type="button"
-                  className="btn-ghost px-2.5 py-1.5"
-                  onClick={() => setEditing(property)}
-                  aria-label={`Editar ${property.nome}`}
-                >
-                  {IconPencil}
-                </button>
-                <DeleteButton id={property.id} nome={property.nome} iconOnly />
-              </div>
-            </li>
-          ))}
-        </ul>
+      <div className="mb-4">
+        <input
+          type="search"
+          placeholder="Buscar imóvel…"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          className="field max-w-xs"
+          aria-label="Buscar imóvel por nome ou endereço"
+        />
       </div>
+
+      {filtrados.length === 0 ? (
+        <p className="rounded-card border border-line bg-surface px-5 py-10 text-center text-sm text-faint">
+          Nenhum imóvel encontrado para &ldquo;{busca}&rdquo;.
+        </p>
+      ) : (
+        <div className="card-surface overflow-hidden">
+          <table className="table-base hidden sm:table">
+            <thead>
+              <tr>
+                <th scope="col">Nome</th>
+                <th scope="col">Endereço</th>
+                <th scope="col">Tipo</th>
+                <th scope="col" className="text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtrados.map((property) => (
+                <tr key={property.id}>
+                  <td className="font-medium text-ink">{property.nome}</td>
+                  <td className="text-muted">{property.endereco}</td>
+                  <td>
+                    <span className="badge bg-canvas text-muted">{TIPO_LABEL[property.tipo]}</span>
+                  </td>
+                  <td>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        className="btn-ghost px-2.5 py-1.5"
+                        onClick={() => setEditing(property)}
+                        aria-label={`Editar ${property.nome}`}
+                      >
+                        {IconPencil}
+                        <span className="hidden md:inline">Editar</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-ghost px-2.5 py-1.5 text-vencido hover:border-vencido/40"
+                        onClick={() => setConfirmTarget(property)}
+                        aria-label={`Excluir ${property.nome}`}
+                      >
+                        {IconTrash}
+                        <span className="hidden md:inline">Excluir</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <ul className="divide-y divide-line sm:hidden">
+            {filtrados.map((property) => (
+              <li key={property.id} className="flex items-start justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-ink">{property.nome}</p>
+                  <p className="mt-0.5 truncate text-sm text-muted">{property.endereco}</p>
+                  <span className="badge mt-2 bg-canvas text-muted">{TIPO_LABEL[property.tipo]}</span>
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <button
+                    type="button"
+                    className="btn-ghost px-2.5 py-1.5"
+                    onClick={() => setEditing(property)}
+                    aria-label={`Editar ${property.nome}`}
+                  >
+                    {IconPencil}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-ghost px-2.5 py-1.5 text-vencido hover:border-vencido/40"
+                    onClick={() => setConfirmTarget(property)}
+                    aria-label={`Excluir ${property.nome}`}
+                  >
+                    {IconTrash}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {confirmTarget ? (
+        <ConfirmModal
+          title="Excluir imóvel"
+          message={`Tem certeza que deseja excluir "${confirmTarget.nome}"? Esta ação não pode ser desfeita.`}
+          confirmLabel="Excluir"
+          onConfirm={async () => {
+            const id = confirmTarget.id;
+            setConfirmTarget(null);
+            const formData = new FormData();
+            formData.set("id", id);
+            await excluirImovel(formData);
+          }}
+          onCancel={() => setConfirmTarget(null)}
+        />
+      ) : null}
 
       {editing ? (
         <PropertyForm
@@ -161,36 +213,5 @@ export function PropertyList({ properties }: PropertyListProps) {
         />
       ) : null}
     </>
-  );
-}
-
-interface DeleteButtonProps {
-  id: string;
-  nome: string;
-  iconOnly?: boolean;
-}
-
-function DeleteButton({ id, nome, iconOnly = false }: DeleteButtonProps) {
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    const confirmado = window.confirm(
-      `Excluir o imóvel "${nome}"? Esta ação não pode ser desfeita.`,
-    );
-    if (!confirmado) {
-      event.preventDefault();
-    }
-  }
-
-  return (
-    <form action={excluirImovel} onSubmit={handleSubmit} className="inline-flex">
-      <input type="hidden" name="id" value={id} />
-      <button
-        type="submit"
-        className="btn-ghost px-2.5 py-1.5 text-vencido hover:border-vencido/40"
-        aria-label={`Excluir ${nome}`}
-      >
-        {IconTrash}
-        {iconOnly ? null : <span className="hidden md:inline">Excluir</span>}
-      </button>
-    </form>
   );
 }

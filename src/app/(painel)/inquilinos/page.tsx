@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { AppShell } from "@/components/shell/AppShell";
+
+export const metadata: Metadata = { title: "Inquilinos — JH Residências" };
 import { TenantList } from "@/components/inquilinos/TenantList";
 import { createServerClient } from "@/lib/supabase/server";
 import type { DbTenant } from "@/lib/db-types";

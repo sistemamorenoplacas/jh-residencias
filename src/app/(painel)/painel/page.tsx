@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { AppShell } from "@/components/shell/AppShell";
+
+export const metadata: Metadata = { title: "Visão Geral — JH Residências" };
 import { MetricCard } from "@/components/ui/MetricCard";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { ChargesTable } from "@/components/charges/ChargesTable";

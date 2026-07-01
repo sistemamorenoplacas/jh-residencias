@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { requireUser } from "@/lib/auth";
+import { SessionGuard } from "@/components/shell/SessionGuard";
 
 /**
  * Layout do grupo (painel).
@@ -20,5 +21,10 @@ export default async function PainelLayout({
   children: ReactNode;
 }) {
   await requireUser();
-  return children;
+  return (
+    <>
+      <SessionGuard />
+      {children}
+    </>
+  );
 }

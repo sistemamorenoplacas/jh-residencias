@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import type { Tenant } from "@/lib/types";
 import { TenantForm } from "./TenantForm";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import {
   excluirInquilino,
   TENANT_FORM_INITIAL_STATE,
@@ -61,8 +62,15 @@ function maskCpf(cpf: string | null): string {
   return `${digits.slice(0, 3)}.***.**${digits.slice(8, 9)}-${digits.slice(9)}`;
 }
 
-/** Exibe o telefone E.164 sem alteração (já é o formato de envio). */
+/** Formata E.164 para exibição: +5511999998888 → (11) 99999-8888 */
 function displayTelefone(telefone: string): string {
+  const digits = telefone.replace(/\D/g, "");
+  if (digits.length === 13 && digits.startsWith("55")) {
+    const ddd = digits.slice(2, 4);
+    const num = digits.slice(4);
+    if (num.length === 9) return `(${ddd}) ${num.slice(0, 5)}-${num.slice(5)}`;
+    if (num.length === 8) return `(${ddd}) ${num.slice(0, 4)}-${num.slice(4)}`;
+  }
   return telefone;
 }
 
@@ -143,19 +151,21 @@ export function TenantList({ tenants }: TenantListProps) {
   const [editing, setEditing] = useState<Editing>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<Tenant | null>(null);
+  const [busca, setBusca] = useState("");
+
+  const filtrados = busca.trim()
+    ? tenants.filter((t) =>
+        t.nome.toLowerCase().includes(busca.toLowerCase()),
+      )
+    : tenants;
 
   function closePanel() {
     setEditing(null);
   }
 
-  async function handleDelete(tenant: Tenant) {
-    const confirmed = window.confirm(
-      `Excluir o inquilino "${tenant.nome}"? Esta ação não pode ser desfeita.`,
-    );
-    if (!confirmed) {
-      return;
-    }
-
+  async function confirmarDelete(tenant: Tenant) {
+    setConfirmTarget(null);
     setDeleteError(null);
     setDeletingId(tenant.id);
 
@@ -171,11 +181,20 @@ export function TenantList({ tenants }: TenantListProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted">
-          {tenants.length}{" "}
-          {tenants.length === 1 ? "inquilino" : "inquilinos"}
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <input
+          type="search"
+          placeholder="Buscar inquilino…"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          className="field max-w-xs"
+          aria-label="Buscar inquilino por nome"
+        />
+        <div className="flex items-center justify-between gap-3 sm:justify-end">
+          <p className="text-sm text-muted">
+            {filtrados.length}{" "}
+            {filtrados.length === 1 ? "inquilino" : "inquilinos"}
+          </p>
         <button
           type="button"
           onClick={() => setEditing({ mode: "create" })}
@@ -185,6 +204,7 @@ export function TenantList({ tenants }: TenantListProps) {
           <span className="hidden sm:inline">Adicionar inquilino</span>
           <span className="sm:hidden">Adicionar</span>
         </button>
+        </div>
       </div>
 
       {deleteError ? (
@@ -198,6 +218,10 @@ export function TenantList({ tenants }: TenantListProps) {
 
       {tenants.length === 0 ? (
         <EmptyState onCreate={() => setEditing({ mode: "create" })} />
+      ) : filtrados.length === 0 ? (
+        <p className="rounded-card border border-line bg-surface px-5 py-10 text-center text-sm text-faint">
+          Nenhum inquilino encontrado para &ldquo;{busca}&rdquo;.
+        </p>
       ) : (
         <>
           {/* Desktop */}
@@ -213,7 +237,7 @@ export function TenantList({ tenants }: TenantListProps) {
                 </tr>
               </thead>
               <tbody>
-                {tenants.map((t) => (
+                {filtrados.map((t) => (
                   <tr
                     key={t.id}
                     className="border-b border-line/70 last:border-0 hover:bg-canvas/60"
@@ -237,7 +261,7 @@ export function TenantList({ tenants }: TenantListProps) {
                       <RowActions
                         tenant={t}
                         onEdit={() => setEditing({ mode: "edit", tenant: t })}
-                        onDelete={() => handleDelete(t)}
+                        onDelete={() => setConfirmTarget(t)}
                         deleting={deletingId === t.id}
                       />
                     </td>
@@ -249,7 +273,7 @@ export function TenantList({ tenants }: TenantListProps) {
 
           {/* Mobile */}
           <ul className="flex flex-col gap-3 md:hidden">
-            {tenants.map((t) => (
+            {filtrados.map((t) => (
               <li
                 key={t.id}
                 className="rounded-card border border-line bg-surface p-4"
@@ -275,7 +299,7 @@ export function TenantList({ tenants }: TenantListProps) {
                   <RowActions
                     tenant={t}
                     onEdit={() => setEditing({ mode: "edit", tenant: t })}
-                    onDelete={() => handleDelete(t)}
+                    onDelete={() => setConfirmTarget(t)}
                     deleting={deletingId === t.id}
                   />
                 </div>
@@ -284,6 +308,16 @@ export function TenantList({ tenants }: TenantListProps) {
           </ul>
         </>
       )}
+
+      {confirmTarget ? (
+        <ConfirmModal
+          title="Excluir inquilino"
+          message={`Tem certeza que deseja excluir "${confirmTarget.nome}"? Esta ação não pode ser desfeita.`}
+          confirmLabel="Excluir"
+          onConfirm={() => confirmarDelete(confirmTarget)}
+          onCancel={() => setConfirmTarget(null)}
+        />
+      ) : null}
 
       {editing ? (
         <div
