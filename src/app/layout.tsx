@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Hanken_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -26,8 +26,11 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "JH Residências",
   description: "Cobrança de aluguel — painel administrativo",
-  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
+  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg", apple: "/apple-icon.png" },
+  appleWebApp: { capable: true, title: "JH Residências", statusBarStyle: "default" },
 };
+
+export const viewport: Viewport = { themeColor: "#052351" };
 
 export default function RootLayout({
   children,
