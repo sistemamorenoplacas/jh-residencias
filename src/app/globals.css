@@ -1,65 +1,68 @@
 @import "tailwindcss";
 
 /*
-  JH Residências — Design system "Ledger Editorial"
+  JH Residências — Design system "Terminal" (escuro)
   ------------------------------------------------------------------
-  Broadsheet financeiro + precisão de planta arquitetônica.
-  Papel quente em vez de branco frio · esmeralda estrutural · âmbar-sinal ·
-  hairlines de blueprint · números-herói em serifa (Fraunces) · dígitos
-  tabulares em mono (IBM Plex) · corpo em grotesca quente (Hanken).
+  Terminal financeiro premium · quase-preto de alto contraste ·
+  esmeralda viva (herança da marca) + ouro (sinal de dinheiro) ·
+  números-herói gigantes em grotesca display (Bricolage) ·
+  dígitos tabulares em mono (IBM Plex) · corpo em Hanken Grotesk.
+  Minimalismo exagerado: tipografia grande, espaço negativo, contraste.
 */
 
 @theme {
   /* Tipografia */
   --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+  --font-serif: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
 
-  /* Sidebar — tinta-floresta profunda e quente */
-  --color-sidebar: #14201a;
-  --color-sidebar-elevated: #1b2a22;
-  --color-sidebar-text: #93a79b;
-  --color-sidebar-active: #37d98a;
+  /* Sidebar — preto mais profundo que o canvas */
+  --color-sidebar: #090b0a;
+  --color-sidebar-elevated: #1b201d;
+  --color-sidebar-text: #808d86;
+  --color-sidebar-active: #2fbe7a;
 
-  /* Marca — esmeralda aprofundada */
-  --color-brand: #0e7a4b;
-  --color-brand-dark: #0a5d39;
-  --color-brand-bright: #13a866;
-  --color-brand-tint: #e2efe6;
+  /* Marca — esmeralda viva para brilhar no escuro */
+  --color-brand: #2fbe7a;
+  --color-brand-dark: #23a366;
+  --color-brand-bright: #49dd95;
+  --color-brand-tint: #16271f;
 
-  /* Sinal — âmbar editorial (destaques, atenção) */
-  --color-signal: #b5771b;
-  --color-signal-tint: #f4e9d1;
+  /* Sinal — ouro (dinheiro / atenção) */
+  --color-signal: #e5a93d;
+  --color-signal-tint: #2a2316;
 
-  /* Superfícies — papel quente */
-  --color-canvas: #f1ede4;
-  --color-surface: #fbf9f4;
-  --color-raised: #ffffff;
+  /* Superfícies — quase-preto quente */
+  --color-canvas: #0d0f0e;
+  --color-surface: #161a18;
+  --color-raised: #1c211e;
 
-  /* Texto / linhas — tinta quente */
-  --color-ink: #181510;
-  --color-ink-soft: #37322a;
-  --color-muted: #6b6459;
-  --color-faint: #a39c8e;
-  --color-line: #e4ded1;
-  --color-line-strong: #d6cfbf;
+  /* Texto / linhas — off-white quente sobre escuro */
+  --color-ink: #f3f1ea;
+  --color-ink-soft: #cbc8be;
+  --color-muted: #8b948f;
+  --color-faint: #626b66;
+  --color-line: #282e2a;
+  --color-line-strong: #39403b;
 
   /* Status */
-  --color-pago: #0e7a4b;
-  --color-pago-tint: #e2efe6;
-  --color-pendente: #b5771b;
-  --color-pendente-tint: #f4e9d1;
-  --color-vencido: #b23524;
-  --color-vencido-tint: #f6e3dd;
+  --color-pago: #2fbe7a;
+  --color-pago-tint: #16271f;
+  --color-pendente: #e5a93d;
+  --color-pendente-tint: #2a2316;
+  --color-vencido: #f0603f;
+  --color-vencido-tint: #2c1915;
 
   /* Raio */
   --radius-pill: 999px;
   --radius-card: 14px;
   --radius-shell: 20px;
 
-  /* Sombra em camadas (profundidade sutil) */
-  --shadow-card: 0 1px 2px rgba(24, 21, 16, 0.04), 0 10px 26px -18px rgba(24, 21, 16, 0.22);
-  --shadow-raised: 0 2px 5px rgba(24, 21, 16, 0.05), 0 22px 48px -26px rgba(24, 21, 16, 0.32);
+  /* Sombra + realce interno (profundidade no escuro) */
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 1px 2px rgba(0, 0, 0, 0.4),
+    0 18px 44px -28px rgba(0, 0, 0, 0.7);
+  --shadow-raised: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 6px rgba(0, 0, 0, 0.5),
+    0 28px 60px -30px rgba(0, 0, 0, 0.8);
 
   /* Motion */
   --duration-fast: 150ms;
@@ -82,35 +85,47 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Grão sutil sobre todo o app — atmosfera de papel, não superfície chapada. */
+/* Grão sutil claro sobre o escuro — textura de superfície, não chapado. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* =========================================================================
-   Tipografia editorial
-   ========================================================================= */
-
-/* Título/serifa — números-herói e cabeçalhos com caráter. */
-.serif {
-  font-family: var(--font-serif);
-  font-weight: 500;
-  letter-spacing: -0.01em;
+/* Brilho ambiente esmeralda no topo do canvas — atmosfera de terminal. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 480px;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 100% at 78% -10%, rgba(47, 190, 122, 0.09), transparent 60%);
 }
 
-/* Número-herói (KPI dominante). Serifa, apertado, com feição financeira. */
-.num-hero {
+/* =========================================================================
+   Tipografia editorial (terminal)
+   ========================================================================= */
+
+/* Display grotesca — títulos e números com caráter. */
+.serif {
   font-family: var(--font-serif);
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+}
+
+/* Número-herói dominante — enorme, apertado, feição financeira. */
+.num-hero {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: -0.045em;
   font-variant-numeric: lining-nums;
-  line-height: 0.92;
+  line-height: 0.9;
 }
 
 /* Algarismos tabulares mono — valores em tabelas/listas. */
@@ -121,7 +136,7 @@ body::before {
   letter-spacing: -0.01em;
 }
 
-/* Kicker editorial — rótulo de seção: mono, caixa-alta, com traço-âmbar. */
+/* Kicker — rótulo de seção: mono, caixa-alta, com traço-ouro. */
 .kicker {
   display: inline-flex;
   align-items: center;
@@ -129,7 +144,7 @@ body::before {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-muted);
 }
@@ -141,7 +156,7 @@ body::before {
   background: var(--color-signal);
 }
 
-/* Índice de seção (01 / 02) estilo revista. */
+/* Índice de seção (01 / 02) estilo terminal. */
 .section-index {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
@@ -154,7 +169,7 @@ body::before {
    Superfícies e componentes (Fundação)
    ========================================================================= */
 
-/* Cartão padrão — hairline + sombra em camadas. */
+/* Cartão padrão — hairline + realce interno + sombra profunda. */
 .card-surface {
   position: relative;
   background: var(--color-surface);
@@ -168,7 +183,7 @@ body::before {
   background-image:
     linear-gradient(var(--color-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
-  background-size: 28px 28px;
+  background-size: 30px 30px;
   background-position: -1px -1px;
 }
 
@@ -202,11 +217,11 @@ body::before {
 
 .field:focus {
   border-color: var(--color-brand);
-  box-shadow: 0 0 0 3px var(--color-brand-tint);
+  box-shadow: 0 0 0 3px rgba(47, 190, 122, 0.18);
 }
 
 .field:disabled {
-  background: var(--color-canvas);
+  background: var(--color-surface);
   color: var(--color-muted);
   cursor: not-allowed;
 }
@@ -231,13 +246,13 @@ body::before {
 }
 
 .btn-ghost:hover {
-  background: var(--color-canvas);
+  background: var(--color-raised);
   border-color: var(--color-faint);
 }
 
 .btn-ghost:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--color-brand-tint);
+  box-shadow: 0 0 0 3px rgba(47, 190, 122, 0.18);
 }
 
 .btn-ghost:disabled {
@@ -275,7 +290,7 @@ body::before {
 }
 
 .table-base tbody tr:hover td {
-  background: var(--color-canvas);
+  background: var(--color-raised);
 }
 
 /* Badge de status */

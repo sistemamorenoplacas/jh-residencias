@@ -92,7 +92,7 @@ export function Sidebar({ user }: { user?: SidebarUser }) {
   const emailDisplay = user?.email ?? "Administrador";
 
   return (
-    <aside className="sticky top-0 hidden h-dvh w-[232px] shrink-0 flex-col bg-sidebar px-4 py-6 lg:flex">
+    <aside className="sticky top-0 hidden h-dvh w-[232px] shrink-0 flex-col border-r border-line bg-sidebar px-4 py-6 lg:flex">
       {/* Marca + wordmark */}
       <div className="px-1.5 pb-6">
         <img src="/logo.svg" alt="JH Residências" className="h-11 w-auto" />

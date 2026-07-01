@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { Fraunces, Hanken_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Hanken_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-/** Serifa editorial com caráter — títulos e algarismos-herói (estilo broadsheet). */
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+/** Grotesca display com caráter — títulos e algarismos-herói (terminal financeiro). */
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 /** Grotesca limpa e levemente quente — corpo, navegação, rótulos. */
@@ -38,7 +37,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${fraunces.variable} ${hanken.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${bricolage.variable} ${hanken.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">{children}</body>
     </html>
