@@ -93,7 +93,12 @@ export function Sidebar({ user }: { user?: SidebarUser }) {
 
   return (
     <aside className="sticky top-0 hidden h-dvh w-[236px] shrink-0 flex-col border-r border-line bg-sidebar px-4 py-6 lg:flex">
-      {/* Perfil no topo + botão sair; configurações abrem em pop-up */}
+      {/* Logo centralizada no topo (cabeçalho da marca) */}
+      <div className="mb-6 flex justify-center">
+        <img src="/logo.svg" alt="JH Residências" className="h-16 w-auto" />
+      </div>
+
+      {/* Perfil + botão sair; configurações abrem em pop-up */}
       <ProfileMenu user={user} />
 
       <nav className="flex flex-1 flex-col gap-1">
@@ -122,14 +127,6 @@ export function Sidebar({ user }: { user?: SidebarUser }) {
         })}
       </nav>
 
-      <div className="mt-3 h-px bg-line" />
-
-      <div className="mt-3 flex items-center gap-2 px-1.5">
-        <img src="/logo.svg" alt="JH Residências" className="h-8 w-auto" />
-        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">
-          JH Residências
-        </span>
-      </div>
     </aside>
   );
 }
