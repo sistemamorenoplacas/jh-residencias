@@ -60,9 +60,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
       <div className="relative z-10 w-full max-w-[400px]">
         <div className="mb-7 flex flex-col items-center text-center">
-          <div className="rounded-3xl bg-white p-4 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] ring-1 ring-white/15">
-            <img src="/logo.svg" alt="JH Residências" className="h-24 w-auto" />
-          </div>
+          <img
+            src="/logo.svg"
+            alt="JH Residências"
+            className="h-32 w-auto brightness-0 invert"
+          />
           <h1 className="serif mt-6 text-2xl text-white">Bem-vindo de volta</h1>
           <p className="mt-1.5 text-sm text-white/55">
             Gerencie seus aluguéis num só lugar.
