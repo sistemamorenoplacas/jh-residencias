@@ -1,13 +1,11 @@
 @import "tailwindcss";
 
 /*
-  JH Residências — Design system "Terminal" (escuro)
+  JH Residências — Design system "Aurora" (claro)
   ------------------------------------------------------------------
-  Terminal financeiro premium · quase-preto de alto contraste ·
-  esmeralda viva (herança da marca) + ouro (sinal de dinheiro) ·
-  números-herói gigantes em grotesca display (Bricolage) ·
-  dígitos tabulares em mono (IBM Plex) · corpo em Hanken Grotesk.
-  Minimalismo exagerado: tipografia grande, espaço negativo, contraste.
+  Dashboard imobiliário claro e limpo. Acento índigo, tints suaves,
+  cards brancos com sombra macia. Números grandes em sans bold.
+  Referência: painel SaaS de gestão imobiliária.
 */
 
 @theme {
@@ -16,53 +14,54 @@
   --font-serif: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
 
-  /* Sidebar — preto mais profundo que o canvas */
-  --color-sidebar: #090b0a;
-  --color-sidebar-elevated: #1b201d;
-  --color-sidebar-text: #808d86;
-  --color-sidebar-active: #2fbe7a;
+  /* Sidebar — clara */
+  --color-sidebar: #ffffff;
+  --color-sidebar-elevated: #f4f5fb;
+  --color-sidebar-text: #6b7280;
+  --color-sidebar-active: #4f46e5;
 
-  /* Marca — esmeralda viva para brilhar no escuro */
-  --color-brand: #2fbe7a;
-  --color-brand-dark: #23a366;
-  --color-brand-bright: #49dd95;
-  --color-brand-tint: #16271f;
+  /* Marca — índigo */
+  --color-brand: #4f46e5;
+  --color-brand-dark: #4338ca;
+  --color-brand-bright: #6366f1;
+  --color-brand-tint: #ecedfd;
 
-  /* Sinal — ouro (dinheiro / atenção) */
-  --color-signal: #e5a93d;
-  --color-signal-tint: #2a2316;
+  /* Sinal — âmbar (atenção) */
+  --color-signal: #d97706;
+  --color-signal-tint: #fdf0dd;
 
-  /* Superfícies — quase-preto quente */
-  --color-canvas: #0d0f0e;
-  --color-surface: #161a18;
-  --color-raised: #1c211e;
+  /* Mint — card de destaque secundário */
+  --color-mint: #e7f6ee;
 
-  /* Texto / linhas — off-white quente sobre escuro */
-  --color-ink: #f3f1ea;
-  --color-ink-soft: #cbc8be;
-  --color-muted: #8b948f;
-  --color-faint: #626b66;
-  --color-line: #282e2a;
-  --color-line-strong: #39403b;
+  /* Superfícies — claras */
+  --color-canvas: #f4f5f8;
+  --color-surface: #ffffff;
+  --color-raised: #ffffff;
+
+  /* Texto / linhas */
+  --color-ink: #161a20;
+  --color-ink-soft: #3b414b;
+  --color-muted: #6b7280;
+  --color-faint: #9ca3af;
+  --color-line: #edeef2;
+  --color-line-strong: #e2e4ea;
 
   /* Status */
-  --color-pago: #2fbe7a;
-  --color-pago-tint: #16271f;
-  --color-pendente: #e5a93d;
-  --color-pendente-tint: #2a2316;
-  --color-vencido: #f0603f;
-  --color-vencido-tint: #2c1915;
+  --color-pago: #15a34a;
+  --color-pago-tint: #e7f6ec;
+  --color-pendente: #d97706;
+  --color-pendente-tint: #fdf0dd;
+  --color-vencido: #e5484d;
+  --color-vencido-tint: #fdeaea;
 
   /* Raio */
   --radius-pill: 999px;
-  --radius-card: 14px;
-  --radius-shell: 20px;
+  --radius-card: 16px;
+  --radius-shell: 22px;
 
-  /* Sombra + realce interno (profundidade no escuro) */
-  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 1px 2px rgba(0, 0, 0, 0.4),
-    0 18px 44px -28px rgba(0, 0, 0, 0.7);
-  --shadow-raised: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 6px rgba(0, 0, 0, 0.5),
-    0 28px 60px -30px rgba(0, 0, 0, 0.8);
+  /* Sombra macia (claro) */
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 2px 6px rgba(16, 24, 40, 0.05);
+  --shadow-raised: 0 6px 16px rgba(16, 24, 40, 0.08), 0 2px 4px rgba(16, 24, 40, 0.04);
 
   /* Motion */
   --duration-fast: 150ms;
@@ -79,64 +78,37 @@ html {
 }
 
 body {
-  position: relative;
   background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
 
-/* Grão sutil claro sobre o escuro — textura de superfície, não chapado. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.05;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* Brilho ambiente esmeralda no topo do canvas — atmosfera de terminal. */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: 480px;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(120% 100% at 78% -10%, rgba(47, 190, 122, 0.09), transparent 60%);
-}
-
 /* =========================================================================
-   Tipografia editorial (terminal)
+   Tipografia
    ========================================================================= */
 
-/* Display grotesca — títulos e números com caráter. */
 .serif {
   font-family: var(--font-serif);
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 
-/* Número-herói dominante — enorme, apertado, feição financeira. */
+/* Número grande (KPI) — sans bold, apertado, feição de painel financeiro. */
 .num-hero {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-weight: 700;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.03em;
   font-variant-numeric: lining-nums;
-  line-height: 0.9;
+  line-height: 0.95;
 }
 
-/* Algarismos tabulares mono — valores em tabelas/listas. */
+/* Algarismos tabulares mono — colunas de valor. */
 .tnum {
-  font-family: var(--font-mono);
   font-feature-settings: "tnum" 1;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
 }
 
-/* Kicker — rótulo de seção: mono, caixa-alta, com traço-ouro. */
+/* Kicker — rótulo de seção discreto. */
 .kicker {
   display: inline-flex;
   align-items: center;
@@ -144,7 +116,7 @@ body::after {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-muted);
 }
@@ -153,10 +125,9 @@ body::after {
   content: "";
   width: 1.25rem;
   height: 1px;
-  background: var(--color-signal);
+  background: var(--color-brand);
 }
 
-/* Índice de seção (01 / 02) estilo terminal. */
 .section-index {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
@@ -169,16 +140,13 @@ body::after {
    Superfícies e componentes (Fundação)
    ========================================================================= */
 
-/* Cartão padrão — hairline + realce interno + sombra profunda. */
 .card-surface {
-  position: relative;
   background: var(--color-surface);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
 }
 
-/* Painel-herói com grelha de blueprint arquitetônica. */
 .blueprint {
   background-image:
     linear-gradient(var(--color-line) 1px, transparent 1px),
@@ -187,7 +155,6 @@ body::after {
   background-position: -1px -1px;
 }
 
-/* Rótulo de formulário */
 .label {
   display: block;
   margin-bottom: 0.375rem;
@@ -196,13 +163,12 @@ body::after {
   color: var(--color-muted);
 }
 
-/* Base de input / select / textarea */
 .field {
   width: 100%;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   color: var(--color-ink);
-  background: var(--color-raised);
+  background: var(--color-surface);
   border: 1px solid var(--color-line-strong);
   border-radius: 10px;
   outline: none;
@@ -217,16 +183,15 @@ body::after {
 
 .field:focus {
   border-color: var(--color-brand);
-  box-shadow: 0 0 0 3px rgba(47, 190, 122, 0.18);
+  box-shadow: 0 0 0 3px var(--color-brand-tint);
 }
 
 .field:disabled {
-  background: var(--color-surface);
+  background: var(--color-canvas);
   color: var(--color-muted);
   cursor: not-allowed;
 }
 
-/* Botão fantasma (ação secundária) */
 .btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -236,7 +201,7 @@ body::after {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-ink);
-  background: transparent;
+  background: var(--color-surface);
   border: 1px solid var(--color-line-strong);
   border-radius: var(--radius-pill);
   cursor: pointer;
@@ -246,13 +211,13 @@ body::after {
 }
 
 .btn-ghost:hover {
-  background: var(--color-raised);
+  background: var(--color-canvas);
   border-color: var(--color-faint);
 }
 
 .btn-ghost:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(47, 190, 122, 0.18);
+  box-shadow: 0 0 0 3px var(--color-brand-tint);
 }
 
 .btn-ghost:disabled {
@@ -260,7 +225,6 @@ body::after {
   cursor: not-allowed;
 }
 
-/* Tabela base */
 .table-base {
   width: 100%;
   border-collapse: collapse;
@@ -270,13 +234,10 @@ body::after {
 .table-base thead th {
   padding: 0.625rem 1rem;
   text-align: left;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-faint);
-  border-bottom: 1px solid var(--color-line-strong);
+  color: var(--color-muted);
+  border-bottom: 1px solid var(--color-line);
 }
 
 .table-base tbody td {
@@ -290,10 +251,9 @@ body::after {
 }
 
 .table-base tbody tr:hover td {
-  background: var(--color-raised);
+  background: var(--color-canvas);
 }
 
-/* Badge de status */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -327,7 +287,7 @@ body::after {
 }
 
 /* =========================================================================
-   Motion — revelação escalonada no carregamento
+   Motion
    ========================================================================= */
 
 @keyframes rise {
@@ -342,7 +302,7 @@ body::after {
 }
 
 .rise {
-  animation: rise 0.7s var(--ease-out-expo) both;
+  animation: rise 0.6s var(--ease-out-expo) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
