@@ -77,9 +77,8 @@ export function Sidebar() {
   const pathname = usePathname();
   return (
     <aside className="sticky top-0 hidden h-dvh w-[212px] shrink-0 flex-col bg-sidebar px-3 py-5 lg:flex">
-      <div className="flex items-center gap-2.5 px-2.5 pb-6">
-        <span className="flex size-8 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white">JH</span>
-        <span className="text-[15px] font-semibold text-white">Residências</span>
+      <div className="flex items-center px-2.5 pb-6">
+        <img src="/logo.svg" alt="JH Residências" className="h-12 w-auto" />
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">
@@ -103,7 +102,7 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-2 flex items-center gap-3 rounded-xl px-2.5 py-2.5">
-        <span className="flex size-8 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white">JH</span>
+        <span className="flex size-8 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white">A</span>
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-white">Administrador</p>
           <p className="truncate text-xs text-sidebar-text">Uso próprio</p>

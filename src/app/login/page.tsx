@@ -33,17 +33,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main className="grid min-h-dvh place-items-center bg-canvas px-4 py-10">
       <div className="w-full max-w-[380px]">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
-          <span className="flex size-12 items-center justify-center rounded-shell bg-sidebar text-base font-bold text-white">
-            JH
-          </span>
-          <div>
-            <h1 className="text-lg font-semibold tracking-tight text-ink">
-              JH Residências
-            </h1>
-            <p className="mt-0.5 text-sm text-muted">
-              Painel administrativo de cobranças
-            </p>
-          </div>
+          <img src="/logo.svg" alt="JH Residências" className="h-20 w-auto" />
+          <p className="mt-0.5 text-sm text-muted">
+            Painel administrativo de cobranças
+          </p>
         </div>
 
         <div className="card-surface p-6 shadow-[0_1px_2px_rgba(20,32,25,0.04),0_8px_24px_-12px_rgba(20,32,25,0.12)]">

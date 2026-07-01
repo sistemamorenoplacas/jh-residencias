@@ -17,9 +17,7 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between gap-4 border-b border-line bg-surface/80 px-5 py-4 backdrop-blur lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="flex size-8 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white lg:hidden">
-              JH
-            </span>
+            <img src="/logo.svg" alt="JH Residências" className="h-8 w-auto lg:hidden" />
             <div>
               <h1 className="text-lg font-semibold tracking-tight lg:text-xl">{title}</h1>
               {subtitle ? <p className="text-sm text-muted">{subtitle}</p> : null}
