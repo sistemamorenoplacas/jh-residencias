@@ -36,12 +36,16 @@ export function NomeForm({ nomeAtual }: { nomeAtual: string }) {
           type="text"
           defaultValue={nomeAtual}
           required
-          className="input w-full"
+          className="field"
           placeholder="Seu nome"
         />
       </div>
       <div className="flex justify-end">
-        <button type="submit" disabled={pending} className="btn-primary">
+        <button
+          type="submit"
+          disabled={pending}
+          className="inline-flex items-center justify-center gap-2 rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-70"
+        >
           {pending ? "Salvando…" : "Salvar nome"}
         </button>
       </div>
@@ -64,7 +68,7 @@ export function SenhaForm() {
           type="password"
           required
           minLength={6}
-          className="input w-full"
+          className="field"
           placeholder="Mínimo 6 caracteres"
         />
       </div>
@@ -77,12 +81,16 @@ export function SenhaForm() {
           name="confirmacao"
           type="password"
           required
-          className="input w-full"
+          className="field"
           placeholder="Repita a senha"
         />
       </div>
       <div className="flex justify-end">
-        <button type="submit" disabled={pending} className="btn-primary">
+        <button
+          type="submit"
+          disabled={pending}
+          className="inline-flex items-center justify-center gap-2 rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-70"
+        >
           {pending ? "Salvando…" : "Atualizar senha"}
         </button>
       </div>
