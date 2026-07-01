@@ -95,7 +95,7 @@ export function Sidebar({ user }: { user?: SidebarUser }) {
     <aside className="sticky top-0 hidden h-dvh w-[236px] shrink-0 flex-col border-r border-line bg-sidebar px-4 py-6 lg:flex">
       {/* Logo centralizada no topo (cabeçalho da marca) */}
       <div className="mb-6 flex justify-center">
-        <img src="/logo.svg" alt="JH Residências" className="h-32 w-auto" />
+        <img src="/logo.svg" alt="JH Residências" className="h-40 w-auto max-w-full" />
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">
