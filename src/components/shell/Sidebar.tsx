@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { ProfileMenu } from "./ProfileMenu";
+
 export interface SidebarUser {
   email: string | null;
 }
@@ -88,23 +90,11 @@ function isActive(pathname: string, href: string): boolean {
 
 export function Sidebar({ user }: { user?: SidebarUser }) {
   const pathname = usePathname();
-  const inicial = user?.email?.[0]?.toUpperCase() ?? "A";
-  const emailDisplay = user?.email ?? "Administrador";
 
   return (
     <aside className="sticky top-0 hidden h-dvh w-[236px] shrink-0 flex-col border-r border-line bg-sidebar px-4 py-6 lg:flex">
-      {/* Perfil no topo (referência) */}
-      <Link href="/perfil" className="flex items-center gap-3 px-1.5 pb-6">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-tint text-base font-semibold text-brand">
-          {inicial}
-        </span>
-        <div className="min-w-0">
-          <p className="text-[11px] text-faint">Bem-vindo,</p>
-          <p className="truncate text-sm font-semibold text-ink">
-            {emailDisplay.split("@")[0]}
-          </p>
-        </div>
-      </Link>
+      {/* Perfil no topo + botão sair; configurações abrem em pop-up */}
+      <ProfileMenu user={user} />
 
       <nav className="flex flex-1 flex-col gap-1">
         {NAV.map((item) => {
