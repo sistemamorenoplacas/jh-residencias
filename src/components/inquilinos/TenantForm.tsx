@@ -74,6 +74,13 @@ function formatCpf(raw: string): string {
   return formatted;
 }
 
+/** Formata dígitos de CEP como `00000-000` conforme o usuário digita. */
+function formatCep(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
+
 interface TenantFormProps {
   /** Quando presente, o form opera em modo edição. */
   tenant?: Tenant;
@@ -124,13 +131,22 @@ export function TenantForm({ tenant, onCancel, onSuccess }: TenantFormProps) {
     TENANT_FORM_INITIAL_STATE,
   );
 
-  const [telefone, setTelefone] = useState(() => formatPhoneBR(tenant?.telefone ?? ""));
+  const [telefone, setTelefone] = useState(() =>
+    formatPhoneBR(tenant?.telefone ?? ""),
+  );
   const [cpf, setCpf] = useState(() => formatCpf(tenant?.cpf ?? ""));
+  const [cep, setCep] = useState(() => formatCep(tenant?.cep ?? ""));
 
   const nomeId = useId();
   const telefoneId = useId();
   const emailId = useId();
   const cpfId = useId();
+  const cepId = useId();
+  const logradouroId = useId();
+  const numeroId = useId();
+  const bairroId = useId();
+  const cidadeId = useId();
+  const ufId = useId();
 
   useEffect(() => {
     if (state.ok) {
@@ -174,7 +190,11 @@ export function TenantForm({ tenant, onCancel, onSuccess }: TenantFormProps) {
           placeholder="+55 (11) 99999-8888"
           className="field tnum"
         />
-        <input type="hidden" name="telefone" value={normalizePhoneE164(telefone)} />
+        <input
+          type="hidden"
+          name="telefone"
+          value={normalizePhoneE164(telefone)}
+        />
         <p className="mt-1 text-xs text-faint">
           Formato internacional, ex.: +55 (11) 99999-8888.
         </p>
@@ -210,6 +230,108 @@ export function TenantForm({ tenant, onCancel, onSuccess }: TenantFormProps) {
           className="field tnum"
         />
       </div>
+
+      <fieldset className="flex flex-col gap-4 rounded-card border border-line p-4">
+        <legend className="px-1 text-xs font-medium text-faint">
+          Endereço{" "}
+          <span className="font-normal">
+            (opcional — necessário para boleto)
+          </span>
+        </legend>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_2fr]">
+          <div>
+            <label htmlFor={cepId} className="label">
+              CEP
+            </label>
+            <input
+              id={cepId}
+              name="cep"
+              type="text"
+              inputMode="numeric"
+              value={cep}
+              onChange={(e) => setCep(formatCep(e.target.value))}
+              placeholder="00000-000"
+              className="field tnum"
+            />
+          </div>
+          <div>
+            <label htmlFor={logradouroId} className="label">
+              Logradouro
+            </label>
+            <input
+              id={logradouroId}
+              name="logradouro"
+              type="text"
+              autoComplete="address-line1"
+              defaultValue={tenant?.logradouro ?? ""}
+              placeholder="Rua / Avenida"
+              className="field"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div>
+            <label htmlFor={numeroId} className="label">
+              Número
+            </label>
+            <input
+              id={numeroId}
+              name="numero"
+              type="text"
+              defaultValue={tenant?.numero ?? ""}
+              placeholder="123"
+              className="field"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor={bairroId} className="label">
+              Bairro
+            </label>
+            <input
+              id={bairroId}
+              name="bairro"
+              type="text"
+              defaultValue={tenant?.bairro ?? ""}
+              placeholder="Centro"
+              className="field"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[2fr_1fr]">
+          <div>
+            <label htmlFor={cidadeId} className="label">
+              Cidade
+            </label>
+            <input
+              id={cidadeId}
+              name="cidade"
+              type="text"
+              autoComplete="address-level2"
+              defaultValue={tenant?.cidade ?? ""}
+              placeholder="São Paulo"
+              className="field"
+            />
+          </div>
+          <div>
+            <label htmlFor={ufId} className="label">
+              UF
+            </label>
+            <input
+              id={ufId}
+              name="uf"
+              type="text"
+              maxLength={2}
+              autoComplete="address-level1"
+              defaultValue={tenant?.uf ?? ""}
+              placeholder="SP"
+              className="field uppercase"
+            />
+          </div>
+        </div>
+      </fieldset>
 
       {state.error ? (
         <p

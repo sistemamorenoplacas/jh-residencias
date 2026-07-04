@@ -59,33 +59,57 @@ const tenantSchema = z.object({
     .string()
     .trim()
     .regex(E164_REGEX, "Telefone inválido. Use o formato +5511999998888."),
-  email: z
-    .preprocess(
-      emptyToNull,
-      z.string().email("E-mail inválido.").nullable(),
-    ),
-  cpf: z.preprocess(
+  email: z.preprocess(
+    emptyToNull,
+    z.string().email("E-mail inválido.").nullable(),
+  ),
+  cpf: z.preprocess((raw) => {
+    const value = emptyToNull(raw);
+    return value === null ? null : value.replace(/\D/g, "");
+  }, z.string().regex(CPF_REGEX, "CPF deve ter 11 dígitos.").nullable()),
+  // Endereço (opcional) — exigido só quando o boleto for gerado.
+  cep: z.preprocess(
     (raw) => {
       const value = emptyToNull(raw);
       return value === null ? null : value.replace(/\D/g, "");
     },
     z
       .string()
-      .regex(CPF_REGEX, "CPF deve ter 11 dígitos.")
+      .regex(/^\d{8}$/, "CEP deve ter 8 dígitos.")
+      .nullable(),
+  ),
+  logradouro: z.preprocess(emptyToNull, z.string().max(200).nullable()),
+  numero: z.preprocess(emptyToNull, z.string().max(20).nullable()),
+  bairro: z.preprocess(emptyToNull, z.string().max(120).nullable()),
+  cidade: z.preprocess(emptyToNull, z.string().max(120).nullable()),
+  uf: z.preprocess(
+    (raw) => {
+      const value = emptyToNull(raw);
+      return value === null ? null : value.toUpperCase();
+    },
+    z
+      .string()
+      .regex(/^[A-Z]{2}$/, "UF inválida (use 2 letras, ex.: SP).")
       .nullable(),
   ),
 });
 
 type TenantInput = z.infer<typeof tenantSchema>;
 
-function parseTenantForm(formData: FormData):
-  | { ok: true; data: TenantInput }
-  | { ok: false; error: string } {
+function parseTenantForm(
+  formData: FormData,
+): { ok: true; data: TenantInput } | { ok: false; error: string } {
   const parsed = tenantSchema.safeParse({
     nome: formData.get("nome"),
     telefone: formData.get("telefone"),
     email: formData.get("email"),
     cpf: formData.get("cpf"),
+    cep: formData.get("cep"),
+    logradouro: formData.get("logradouro"),
+    numero: formData.get("numero"),
+    bairro: formData.get("bairro"),
+    cidade: formData.get("cidade"),
+    uf: formData.get("uf"),
   });
 
   if (!parsed.success) {
@@ -123,6 +147,12 @@ export async function criarInquilino(
     telefone: parsed.data.telefone,
     email: parsed.data.email,
     cpf: parsed.data.cpf,
+    cep: parsed.data.cep,
+    logradouro: parsed.data.logradouro,
+    numero: parsed.data.numero,
+    bairro: parsed.data.bairro,
+    cidade: parsed.data.cidade,
+    uf: parsed.data.uf,
   } satisfies Omit<DbTenant, "id" | "created_at">);
 
   if (error) {
@@ -161,6 +191,12 @@ export async function atualizarInquilino(
       telefone: parsed.data.telefone,
       email: parsed.data.email,
       cpf: parsed.data.cpf,
+      cep: parsed.data.cep,
+      logradouro: parsed.data.logradouro,
+      numero: parsed.data.numero,
+      bairro: parsed.data.bairro,
+      cidade: parsed.data.cidade,
+      uf: parsed.data.uf,
     })
     .eq("id", id);
 

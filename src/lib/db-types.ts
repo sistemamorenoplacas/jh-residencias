@@ -37,6 +37,13 @@ export interface DbTenant {
   telefone: string;
   email: string | null;
   cpf: string | null;
+  /** Endereço do pagador — exigido pelo boleto (Mercado Pago). Nullable. */
+  cep: string | null;
+  logradouro: string | null;
+  numero: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
   created_at: string;
 }
 

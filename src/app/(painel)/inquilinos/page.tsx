@@ -24,6 +24,12 @@ function toTenant(row: DbTenant): Tenant {
     telefone: row.telefone,
     email: row.email,
     cpf: row.cpf,
+    cep: row.cep,
+    logradouro: row.logradouro,
+    numero: row.numero,
+    bairro: row.bairro,
+    cidade: row.cidade,
+    uf: row.uf,
   };
 }
 
@@ -31,16 +37,15 @@ export default async function InquilinosPage() {
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("tenants")
-    .select("id, nome, telefone, email, cpf, owner_id, created_at")
+    .select(
+      "id, nome, telefone, email, cpf, cep, logradouro, numero, bairro, cidade, uf, owner_id, created_at",
+    )
     .order("nome", { ascending: true });
 
   const tenants: Tenant[] = error ? [] : (data as DbTenant[]).map(toTenant);
 
   return (
-    <AppShell
-      title="Inquilinos"
-      subtitle="Cadastro e contatos"
-    >
+    <AppShell title="Inquilinos" subtitle="Cadastro e contatos">
       {error ? (
         <p
           role="alert"

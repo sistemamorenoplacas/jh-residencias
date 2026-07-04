@@ -16,6 +16,13 @@ export interface Tenant {
   telefone: string; // E.164
   email: string | null;
   cpf: string | null;
+  // Endereço do pagador (opcional) — usado na geração do boleto.
+  cep: string | null;
+  logradouro: string | null;
+  numero: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
 }
 
 export interface Lease {
