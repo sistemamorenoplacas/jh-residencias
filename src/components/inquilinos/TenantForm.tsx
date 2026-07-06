@@ -23,8 +23,11 @@ function formatPhoneBR(raw: string): string {
   // colado à frente (o usuário pode digitar com ou sem o "+55").
   let digits = raw.replace(/\D/g, "");
 
-  // Remove o DDI 55 se já vier embutido, para tratar sempre DDD+número.
-  if (digits.startsWith("55") && digits.length > 11) {
+  // O input é controlado e a máscara sempre reinjeta o "+55"; por isso o DDI
+  // precisa ser removido a CADA tecla — senão o "55" do prefixo vira DDD e
+  // "corre" infinito. Removemos só UM "55" inicial, então o DDD 55 (RS) é
+  // preservado (o segundo "55" continua sendo o DDD).
+  if (digits.startsWith("55")) {
     digits = digits.slice(2);
   }
   digits = digits.slice(0, 11);
@@ -52,7 +55,7 @@ function formatPhoneBR(raw: string): string {
 /** Extrai o E.164 (`+5511999998888`) a partir da string mascarada/digitada. */
 function normalizePhoneE164(raw: string): string {
   let digits = raw.replace(/\D/g, "");
-  if (digits.startsWith("55") && digits.length > 11) {
+  if (digits.startsWith("55")) {
     digits = digits.slice(2);
   }
   digits = digits.slice(0, 11);
