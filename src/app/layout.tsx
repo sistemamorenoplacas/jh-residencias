@@ -26,7 +26,8 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "JH Residências",
   description: "Cobrança de aluguel — painel administrativo",
-  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg", apple: "/apple-icon.png" },
+  // Ícones vêm da convenção de arquivo do Next: src/app/icon.png e
+  // src/app/apple-icon.png. Não declarar `icons` aqui evita conflito.
   appleWebApp: { capable: true, title: "JH Residências", statusBarStyle: "default" },
 };
 
