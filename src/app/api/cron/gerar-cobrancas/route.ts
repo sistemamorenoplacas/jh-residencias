@@ -112,7 +112,9 @@ async function buscarTenantsPorLease(
     .in("id", [...leaseIds]);
 
   if (error) {
-    throw new Error(`falha ao buscar inquilinos dos contratos: ${error.message}`);
+    throw new Error(
+      `falha ao buscar inquilinos dos contratos: ${error.message}`,
+    );
   }
 
   interface TenantRel {
@@ -193,8 +195,6 @@ async function processarCharge(
     linkPagamento: pix.linkPagamento,
   });
 
-  const link = pix.linkPagamento ?? pix.pixCopiaCola;
-
   try {
     const { wamid } = await cobrancaAluguel({
       to: tenant.telefone,
@@ -202,7 +202,7 @@ async function processarCharge(
       competencia: formatCompetencia(charge.competencia),
       valor: formatAmount(charge.valor_centavos),
       vencimento: formatData(charge.vencimento),
-      link,
+      chargeId: charge.id,
     });
     await registrarMensagemWhatsapp({
       ownerId: charge.owner_id,

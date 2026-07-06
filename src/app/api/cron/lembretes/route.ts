@@ -133,23 +133,13 @@ async function registrarLog(input: {
   }
 }
 
-/** Link de pagamento da charge ou fallback para o painel do app. */
-function montarLink(linkPagamento: string | null, baseUrl: string): string {
-  if (linkPagamento && linkPagamento.length > 0) return linkPagamento;
-  return baseUrl;
-}
-
 /**
  * Envia o lembrete de uma charge e grava o log. Retorna `true` se enviado.
  * Erros de envio são capturados, logados como `falhou` e propagados como
  * `ErroLembrete` pelo chamador.
  */
-async function processarLembrete(
-  lembrete: ChargeLembrete,
-  baseUrl: string,
-): Promise<void> {
+async function processarLembrete(lembrete: ChargeLembrete): Promise<void> {
   const { charge, tenant } = lembrete;
-  const link = montarLink(charge.link_pagamento, baseUrl);
 
   let wamid: string | null = null;
   try {
@@ -159,7 +149,7 @@ async function processarLembrete(
       competencia: formatCompetencia(charge.competencia),
       valor: formatBRL(charge.valor_centavos),
       vencimento: formatData(charge.vencimento),
-      link,
+      chargeId: charge.id,
     });
     wamid = result.wamid;
   } catch (error: unknown) {
@@ -238,7 +228,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (jaLembradas.has(lembrete.charge.id)) continue;
 
     try {
-      await processarLembrete(lembrete, env.APP_BASE_URL);
+      await processarLembrete(lembrete);
       lembretesEnviados += 1;
       // Marca em memória para não reenviar caso a mesma charge apareça 2x.
       jaLembradas.add(lembrete.charge.id);

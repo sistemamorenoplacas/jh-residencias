@@ -209,15 +209,13 @@ async function notificarCobranca(
   charge: DbCharge,
   tenant: DbTenant,
 ): Promise<void> {
-  const link = charge.link_pagamento ?? charge.pix_copia_cola ?? "";
-
   const { wamid } = await cobrancaAluguel({
     to: tenant.telefone,
     nome: tenant.nome,
     competencia: formatCompetencia(charge.competencia),
     valor: formatAmount(charge.valor_centavos),
     vencimento: formatData(charge.vencimento),
-    link,
+    chargeId: charge.id,
   });
 
   const supabase = createServiceClient();

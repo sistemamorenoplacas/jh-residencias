@@ -6,9 +6,11 @@
  * e extrai atualizações de status das mensagens.
  *
  * Templates esperados (aprovados na Meta), todos em `pt_BR`:
- *   - `cobranca_aluguel`     {{1}} nome · {{2}} competência · {{3}} valor · {{4}} vencimento · {{5}} link/Pix
- *   - `lembrete_vencimento`  mesma ordem (lembrete D-3 / vencido)
- *   - `pagamento_confirmado` confirmação após o webhook do Mercado Pago
+ *   - `cobranca_aluguel`     corpo {{1}} nome · {{2}} competência · {{3}} valor ·
+ *                            {{4}} vencimento + 2 botões URL (Pix/Boleto) que
+ *                            recebem o id da cobrança como sufixo dinâmico.
+ *   - `lembrete_vencimento`  mesma estrutura (lembrete D-3 / vencido).
+ *   - `pagamento_confirmado` {{1}} nome · {{2}} competência · {{3}} valor (sem botão).
  *
  * Convenções: telefone E.164 sem `+` é aceito pela Graph API; aqui normalizamos
  * removendo o `+` inicial. Datas ISO `YYYY-MM-DD`. Valores já formatados (string
@@ -39,6 +41,26 @@ export interface TemplateParam {
   text: string;
 }
 
+/** Componente `body` com os parâmetros posicionais do corpo. */
+interface BodyComponent {
+  type: "body";
+  parameters: TemplateParam[];
+}
+
+/**
+ * Componente de botão URL dinâmico. O `parameters[0].text` substitui o `{{1}}`
+ * do sufixo da URL do botão (ex.: `.../pagar/pix/{{1}}`). `index` é a posição
+ * do botão no template ("0", "1"…).
+ */
+interface UrlButtonComponent {
+  type: "button";
+  sub_type: "url";
+  index: string;
+  parameters: TemplateParam[];
+}
+
+type TemplateComponent = BodyComponent | UrlButtonComponent;
+
 export interface EnviarTemplateInput {
   /** Destino em E.164 (com ou sem `+`); normalizado internamente. */
   to: string;
@@ -46,6 +68,12 @@ export interface EnviarTemplateInput {
   template: WhatsappTemplateName | string;
   /** Parâmetros do corpo na ordem dos `{{n}}`. */
   params: readonly string[];
+  /**
+   * Sufixos de URL dos botões dinâmicos, na ordem dos botões (índice 0, 1…).
+   * Cada valor substitui o `{{1}}` da URL do respectivo botão. Omitido para
+   * templates sem botão de URL dinâmica.
+   */
+  buttonUrlParams?: readonly string[];
 }
 
 export interface EnviarTemplateResult {
@@ -72,6 +100,30 @@ function montarParametros(params: readonly string[]): TemplateParam[] {
 }
 
 /**
+ * Monta os componentes do template: `body` sempre, seguido de um componente
+ * de botão URL para cada sufixo em `buttonUrlParams` (na ordem dos botões).
+ */
+function montarComponentes(
+  params: readonly string[],
+  buttonUrlParams: readonly string[] | undefined,
+): TemplateComponent[] {
+  const components: TemplateComponent[] = [
+    { type: "body", parameters: montarParametros(params) },
+  ];
+
+  buttonUrlParams?.forEach((text, index) => {
+    components.push({
+      type: "button",
+      sub_type: "url",
+      index: String(index),
+      parameters: [{ type: "text", text }],
+    });
+  });
+
+  return components;
+}
+
+/**
  * Envia um template via WhatsApp Cloud API.
  *
  * `POST {GRAPH_BASE}/{version}/{PHONE_NUMBER_ID}/messages` com
@@ -91,12 +143,7 @@ export async function enviarTemplate(
     template: {
       name: input.template,
       language: { code: TEMPLATE_LANGUAGE },
-      components: [
-        {
-          type: "body",
-          parameters: montarParametros(input.params),
-        },
-      ],
+      components: montarComponentes(input.params, input.buttonUrlParams),
     },
   };
 
@@ -111,7 +158,8 @@ export async function enviarTemplate(
       body: JSON.stringify(body),
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "erro desconhecido";
+    const message =
+      error instanceof Error ? error.message : "erro desconhecido";
     throw new Error(`Falha de rede ao chamar WhatsApp Cloud API: ${message}`);
   }
 
@@ -160,12 +208,14 @@ export interface CobrancaAluguelInput {
   competencia: string;
   valor: string;
   vencimento: string;
-  link: string;
+  /** Id da cobrança — vira o sufixo dinâmico dos botões Pix e Boleto. */
+  chargeId: string;
 }
 
 /**
- * `cobranca_aluguel` —
- * {{1}} nome · {{2}} competência · {{3}} valor · {{4}} vencimento · {{5}} link/Pix.
+ * `cobranca_aluguel` — corpo {{1}} nome · {{2}} competência · {{3}} valor ·
+ * {{4}} vencimento; 2 botões URL (Pix índice 0, Boleto índice 1) recebem o
+ * id da cobrança como sufixo dinâmico da URL.
  */
 export function cobrancaAluguel(
   input: CobrancaAluguelInput,
@@ -173,13 +223,8 @@ export function cobrancaAluguel(
   return enviarTemplate({
     to: input.to,
     template: WHATSAPP_TEMPLATES.cobrancaAluguel,
-    params: [
-      input.nome,
-      input.competencia,
-      input.valor,
-      input.vencimento,
-      input.link,
-    ],
+    params: [input.nome, input.competencia, input.valor, input.vencimento],
+    buttonUrlParams: [input.chargeId, input.chargeId],
   });
 }
 
@@ -189,12 +234,14 @@ export interface LembreteVencimentoInput {
   competencia: string;
   valor: string;
   vencimento: string;
-  link: string;
+  /** Id da cobrança — vira o sufixo dinâmico dos botões Pix e Boleto. */
+  chargeId: string;
 }
 
 /**
- * `lembrete_vencimento` —
- * {{1}} nome · {{2}} competência · {{3}} valor · {{4}} vencimento · {{5}} link/Pix.
+ * `lembrete_vencimento` — mesma estrutura de `cobranca_aluguel`: corpo com
+ * 4 parâmetros + 2 botões URL (Pix índice 0, Boleto índice 1) com o id da
+ * cobrança.
  */
 export function lembreteVencimento(
   input: LembreteVencimentoInput,
@@ -202,13 +249,8 @@ export function lembreteVencimento(
   return enviarTemplate({
     to: input.to,
     template: WHATSAPP_TEMPLATES.lembreteVencimento,
-    params: [
-      input.nome,
-      input.competencia,
-      input.valor,
-      input.vencimento,
-      input.link,
-    ],
+    params: [input.nome, input.competencia, input.valor, input.vencimento],
+    buttonUrlParams: [input.chargeId, input.chargeId],
   });
 }
 
@@ -279,7 +321,9 @@ export interface ValidarXHubSignatureInput {
  * `WHATSAPP_APP_SECRET`, comparado em tempo constante com o digest do header.
  * PURA quando `appSecret` é fornecido. Retorna `false` se header ausente/malformado.
  */
-export function validarXHubSignature(input: ValidarXHubSignatureInput): boolean {
+export function validarXHubSignature(
+  input: ValidarXHubSignatureInput,
+): boolean {
   if (!input.header) return false;
 
   const prefix = "sha256=";
@@ -340,7 +384,8 @@ export function parseStatuses(payload: unknown): StatusUpdate[] {
         if (typeof status !== "object" || status === null) continue;
         const wamid = (status as { id?: unknown }).id;
         const rawStatus = (status as { status?: unknown }).status;
-        if (typeof wamid !== "string" || typeof rawStatus !== "string") continue;
+        if (typeof wamid !== "string" || typeof rawStatus !== "string")
+          continue;
 
         const mapped = STATUS_MAP[rawStatus];
         if (!mapped) continue;
