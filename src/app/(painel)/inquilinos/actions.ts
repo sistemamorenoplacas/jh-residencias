@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { createServerClient } from "@/lib/supabase/server";
 import type { DbTenant } from "@/lib/db-types";
+import type { TenantFormState } from "./form-state";
 
 /**
  * Server Actions do CRUD de inquilinos.
@@ -20,16 +21,6 @@ import type { DbTenant } from "@/lib/db-types";
  * formulário exibir erros amigáveis. Em caso de sucesso, `revalidatePath`
  * atualiza a lista e o form fecha no client.
  */
-
-export interface TenantFormState {
-  ok: boolean;
-  error: string | null;
-}
-
-export const TENANT_FORM_INITIAL_STATE: TenantFormState = {
-  ok: false,
-  error: null,
-};
 
 /** E.164: "+" seguido de 7 a 15 dígitos, primeiro dígito não-zero. */
 const E164_REGEX = /^\+[1-9]\d{6,14}$/;

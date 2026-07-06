@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { createServerClient } from "@/lib/supabase/server";
 import { parseBRLToCentavos } from "@/lib/money";
+import type { LeaseFormState } from "./form-state";
 
 /**
  * Server Actions do CRUD de Contratos (leases).
@@ -16,23 +17,6 @@ import { parseBRLToCentavos } from "@/lib/money";
  * nunca confiado a partir do formulário. Valores monetários trafegam em
  * centavos (inteiro); a UI envia a string BRL e convertemos na borda.
  */
-
-export interface LeaseFormState {
-  error: string | null;
-  fieldErrors?: Partial<Record<LeaseField, string>>;
-}
-
-type LeaseField =
-  | "propertyId"
-  | "tenantId"
-  | "valor"
-  | "diaVencimento"
-  | "multaPercent"
-  | "jurosMesPercent"
-  | "inicio"
-  | "fim";
-
-export const INITIAL_LEASE_STATE: LeaseFormState = { error: null };
 
 const DIA_VENCIMENTO_MIN = 1;
 const DIA_VENCIMENTO_MAX = 28;
@@ -54,9 +38,18 @@ const leaseSchema = z.object({
   diaVencimento: z.coerce
     .number()
     .int()
-    .min(DIA_VENCIMENTO_MIN, `Dia entre ${DIA_VENCIMENTO_MIN} e ${DIA_VENCIMENTO_MAX}.`)
-    .max(DIA_VENCIMENTO_MAX, `Dia entre ${DIA_VENCIMENTO_MIN} e ${DIA_VENCIMENTO_MAX}.`),
-  multaPercent: z.coerce.number().min(0, "Multa não pode ser negativa.").max(100, "Multa inválida."),
+    .min(
+      DIA_VENCIMENTO_MIN,
+      `Dia entre ${DIA_VENCIMENTO_MIN} e ${DIA_VENCIMENTO_MAX}.`,
+    )
+    .max(
+      DIA_VENCIMENTO_MAX,
+      `Dia entre ${DIA_VENCIMENTO_MIN} e ${DIA_VENCIMENTO_MAX}.`,
+    ),
+  multaPercent: z.coerce
+    .number()
+    .min(0, "Multa não pode ser negativa.")
+    .max(100, "Multa inválida."),
   jurosMesPercent: z.coerce
     .number()
     .min(0, "Juros não pode ser negativo.")

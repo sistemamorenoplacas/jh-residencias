@@ -6,9 +6,11 @@ import { useFormStatus } from "react-dom";
 import {
   criarContrato,
   atualizarContrato,
+} from "@/app/(painel)/contratos/actions";
+import {
   INITIAL_LEASE_STATE,
   type LeaseFormState,
-} from "@/app/(painel)/contratos/actions";
+} from "@/app/(painel)/contratos/form-state";
 import { formatAmount } from "@/lib/money";
 
 export interface LeaseFormOption {
@@ -55,15 +57,29 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
   );
 }
 
-function FieldLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
+function FieldLabel({
+  htmlFor,
+  children,
+}: {
+  htmlFor: string;
+  children: React.ReactNode;
+}) {
   return (
-    <label htmlFor={htmlFor} className="mb-1.5 block text-xs font-medium text-muted">
+    <label
+      htmlFor={htmlFor}
+      className="mb-1.5 block text-xs font-medium text-muted"
+    >
       {children}
     </label>
   );
 }
 
-export function LeaseForm({ properties, tenants, lease, onClose }: LeaseFormProps) {
+export function LeaseForm({
+  properties,
+  tenants,
+  lease,
+  onClose,
+}: LeaseFormProps) {
   const isEdit = Boolean(lease);
   const action = isEdit ? atualizarContrato : criarContrato;
 
@@ -82,7 +98,10 @@ export function LeaseForm({ properties, tenants, lease, onClose }: LeaseFormProp
   const hasOptions = properties.length > 0 && tenants.length > 0;
 
   return (
-    <form action={formAction} className="rounded-card border border-line bg-surface p-5">
+    <form
+      action={formAction}
+      className="rounded-card border border-line bg-surface p-5"
+    >
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold tracking-tight text-ink">
           {isEdit ? "Editar contrato" : "Novo contrato"}
@@ -159,7 +178,9 @@ export function LeaseForm({ properties, tenants, lease, onClose }: LeaseFormProp
         </div>
 
         <div>
-          <FieldLabel htmlFor="diaVencimento">Dia do vencimento (1–28)</FieldLabel>
+          <FieldLabel htmlFor="diaVencimento">
+            Dia do vencimento (1–28)
+          </FieldLabel>
           <input
             id="diaVencimento"
             name="diaVencimento"
@@ -235,7 +256,10 @@ export function LeaseForm({ properties, tenants, lease, onClose }: LeaseFormProp
       </label>
 
       {state.error ? (
-        <p className="mt-4 rounded-card bg-vencido-tint px-3 py-2.5 text-sm text-vencido" role="alert">
+        <p
+          className="mt-4 rounded-card bg-vencido-tint px-3 py-2.5 text-sm text-vencido"
+          role="alert"
+        >
           {state.error}
         </p>
       ) : null}

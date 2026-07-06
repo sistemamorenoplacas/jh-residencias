@@ -6,10 +6,8 @@ import type { Tenant } from "@/lib/types";
 import { TenantForm } from "./TenantForm";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { ModalPortal } from "@/components/ui/ModalPortal";
-import {
-  excluirInquilino,
-  TENANT_FORM_INITIAL_STATE,
-} from "@/app/(painel)/inquilinos/actions";
+import { excluirInquilino } from "@/app/(painel)/inquilinos/actions";
+import { TENANT_FORM_INITIAL_STATE } from "@/app/(painel)/inquilinos/form-state";
 
 interface TenantListProps {
   tenants: Tenant[];

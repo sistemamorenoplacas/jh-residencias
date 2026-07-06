@@ -7,9 +7,11 @@ import type { Tenant } from "@/lib/types";
 import {
   criarInquilino,
   atualizarInquilino,
+} from "@/app/(painel)/inquilinos/actions";
+import {
   TENANT_FORM_INITIAL_STATE,
   type TenantFormState,
-} from "@/app/(painel)/inquilinos/actions";
+} from "@/app/(painel)/inquilinos/form-state";
 
 /**
  * Formata dígitos de telefone BR como `+55 (11) 99999-8888` conforme o
