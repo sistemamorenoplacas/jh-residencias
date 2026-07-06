@@ -4,7 +4,7 @@ import { createServerClient as createSsrServerClient } from "@supabase/ssr";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
-import { publicEnv, serverEnv } from "@/lib/env";
+import { publicEnv, supabaseServiceRoleKey } from "@/lib/env";
 
 /**
  * Clients Supabase server-only.
@@ -24,7 +24,7 @@ import { publicEnv, serverEnv } from "@/lib/env";
  */
 export function createServiceClient(): SupabaseClient {
   const { NEXT_PUBLIC_SUPABASE_URL } = publicEnv();
-  const { SUPABASE_SERVICE_ROLE_KEY } = serverEnv();
+  const SUPABASE_SERVICE_ROLE_KEY = supabaseServiceRoleKey();
 
   return createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: {

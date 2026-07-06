@@ -8,15 +8,16 @@ import { updateSession } from "@/lib/supabase/middleware";
  * Refaz a sessão Supabase em todo request coberto pelo matcher e protege o
  * grupo (painel): sem sessão => redireciona para /login.
  *
- * Fora do guard: `/login` (página pública) e `/api/*` (webhooks/cron, que se
- * autenticam por assinatura/CRON_SECRET, não por cookie de sessão).
+ * Fora do guard: páginas públicas (`/login`, `/pagar/*` — pagamento pelo
+ * inquilino sem sessão, `/politica-de-privacidade`) e `/api/*` (webhooks/cron,
+ * que se autenticam por assinatura/CRON_SECRET, não por cookie de sessão).
  *
  * Nota Next 16: `middleware` foi renomeado para `proxy` (deprecado mas
  * funcional). Mantido como `middleware.ts` por ser o contrato esperado pelos
  * demais agentes; migração para `proxy.ts` é um follow-up.
  */
 
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/login", "/pagar", "/politica-de-privacidade"];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(

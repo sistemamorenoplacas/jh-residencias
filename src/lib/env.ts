@@ -34,6 +34,7 @@ export type PublicEnv = z.infer<typeof publicSchema>;
 
 let serverCache: ServerEnv | null = null;
 let publicCache: PublicEnv | null = null;
+let serviceRoleKeyCache: string | null = null;
 
 function formatIssues(error: z.ZodError): string {
   return error.issues
@@ -68,6 +69,33 @@ export function serverEnv(): ServerEnv {
 
   serverCache = parsed.data;
   return serverCache;
+}
+
+/**
+ * Apenas a `SUPABASE_SERVICE_ROLE_KEY`, validada isoladamente.
+ *
+ * Ler o banco com service role NÃO deve exigir as secrets de MP/WhatsApp: uma
+ * página pública (ex.: pagamento do inquilino) só precisa do Supabase. Usar
+ * `serverEnv()` aqui acoplaria a página a secrets não relacionadas e a faria
+ * quebrar se qualquer uma faltasse. Resultado memoizado após a 1ª chamada.
+ */
+export function supabaseServiceRoleKey(): string {
+  if (serviceRoleKeyCache) return serviceRoleKeyCache;
+
+  const parsed = z
+    .object({ SUPABASE_SERVICE_ROLE_KEY: z.string().min(1) })
+    .safeParse({
+      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    });
+
+  if (!parsed.success) {
+    throw new Error(
+      `Variável de ambiente inválida/ausente: ${formatIssues(parsed.error)}`,
+    );
+  }
+
+  serviceRoleKeyCache = parsed.data.SUPABASE_SERVICE_ROLE_KEY;
+  return serviceRoleKeyCache;
 }
 
 /**
