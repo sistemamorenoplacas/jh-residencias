@@ -5,6 +5,7 @@ import {
   extrairCamposAssinatura,
   mapStatusMpToCharge,
   validarAssinaturaWebhook,
+  vencimentoParaExpiration,
 } from "@/lib/mercadopago";
 
 /**
@@ -153,5 +154,48 @@ describe("mapStatusMpToCharge", () => {
 
   it("trata status desconhecido conservadoramente como pendente", () => {
     expect(mapStatusMpToCharge("status_inexistente")).toBe("pendente");
+  });
+});
+
+describe("vencimentoParaExpiration", () => {
+  it("usa o fim do dia do vencimento quando ele está no futuro", () => {
+    // Arrange: hoje 01/07, vencimento 10/07 (bem no futuro)
+    const agora = new Date("2026-07-01T09:00:00-03:00");
+
+    // Act
+    const exp = vencimentoParaExpiration("2026-07-10", agora);
+
+    // Assert
+    expect(exp).toBe("2026-07-10T23:59:59.000-03:00");
+  });
+
+  it("não recusa (mantém futuro) quando a cobrança já venceu — regressão do HTTP 400", () => {
+    // Arrange: hoje 06/07, competência/vencimento 01/07 (no passado)
+    const agora = new Date("2026-07-06T12:00:00-03:00");
+
+    // Act
+    const exp = vencimentoParaExpiration("2026-07-01", agora);
+
+    // Assert: nunca no passado; janela de 3 dias a partir de agora
+    expect(Date.parse(exp)).toBeGreaterThan(agora.getTime());
+    expect(exp).toBe("2026-07-09T23:59:59.000-03:00");
+  });
+
+  it("recai na janela mínima quando o vencimento é hoje mas a menos de 1h", () => {
+    // Arrange: agora 23:30 -03:00; fim do dia (23:59:59) está a ~30min
+    const agora = new Date("2026-07-06T23:30:00-03:00");
+
+    // Act
+    const exp = vencimentoParaExpiration("2026-07-06", agora);
+
+    // Assert: usa +3 dias em vez do fim do dia (muito próximo)
+    expect(exp).toBe("2026-07-09T23:59:59.000-03:00");
+    expect(Date.parse(exp)).toBeGreaterThan(agora.getTime());
+  });
+
+  it("sempre devolve ISO 8601 com milissegundos e offset de Brasília", () => {
+    const agora = new Date("2026-07-06T12:00:00-03:00");
+    const exp = vencimentoParaExpiration("2026-07-01", agora);
+    expect(exp).toMatch(/^\d{4}-\d{2}-\d{2}T23:59:59\.000-03:00$/);
   });
 });

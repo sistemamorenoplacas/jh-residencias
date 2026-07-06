@@ -188,7 +188,7 @@ export async function criarCobrancaPix(
     transaction_amount: centavosParaReais(valorCentavos),
     payment_method_id: "pix",
     external_reference: chargeId,
-    date_of_expiration: vencimentoParaExpiration(vencimento),
+    date_of_expiration: vencimentoParaExpiration(vencimento, new Date()),
     payer: { email: payerEmail },
     description: `Aluguel — cobrança ${chargeId}`,
   };
@@ -258,10 +258,47 @@ function centavosParaReais(valorCentavos: number): number {
   return Math.round(valorCentavos) / 100;
 }
 
-/** `YYYY-MM-DD` → ISO 8601 com offset que o MP aceita em `date_of_expiration`. */
-function vencimentoParaExpiration(vencimento: string): string {
-  // MP expira no fim do dia de vencimento. Offset UTC explícito evita 400.
-  return `${vencimento}T23:59:59.000-03:00`;
+/** Offset fixo de Brasília (Brasil não usa horário de verão desde 2019). */
+const OFFSET_BRASILIA = "-03:00";
+
+/**
+ * Janela mínima quando a cobrança já venceu (ou vence hoje muito em cima da
+ * hora): o Pix precisa continuar pagável, então damos N dias a partir de agora.
+ * O MP recusa `date_of_expiration` no passado com HTTP 400.
+ */
+const DIAS_MINIMOS_EXPIRACAO = 3;
+
+/** Margem acima do mínimo de 30 min exigido pelo MP, para folga. */
+const MARGEM_MINIMA_MS = 60 * 60 * 1000; // 1h
+
+const MS_POR_DIA = 24 * 60 * 60 * 1000;
+const MS_OFFSET_BRASILIA = 3 * 60 * 60 * 1000;
+
+/** Dia-calendário de Brasília (`YYYY-MM-DD`) de um instante qualquer. */
+function diaBrasilia(instante: Date): string {
+  const emBrasilia = new Date(instante.getTime() - MS_OFFSET_BRASILIA);
+  const ano = emBrasilia.getUTCFullYear();
+  const mes = String(emBrasilia.getUTCMonth() + 1).padStart(2, "0");
+  const dia = String(emBrasilia.getUTCDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+}
+
+/**
+ * `YYYY-MM-DD` → ISO 8601 (`date_of_expiration`) que o MP aceita.
+ *
+ * O Pix expira no fim do dia do vencimento. Se esse instante já passou (ou está
+ * a menos de 1h de agora), a cobrança está atrasada: garantimos uma janela de
+ * {@link DIAS_MINIMOS_EXPIRACAO} dias para o inquilino ainda pagar, evitando o
+ * HTTP 400 "Invalid date_of_expiration".
+ */
+export function vencimentoParaExpiration(vencimento: string, agora: Date): string {
+  const fimDoVencimento = `${vencimento}T23:59:59.000${OFFSET_BRASILIA}`;
+  const limiteMinimo = agora.getTime() + MARGEM_MINIMA_MS;
+  if (Date.parse(fimDoVencimento) >= limiteMinimo) {
+    return fimDoVencimento;
+  }
+  const alvo = new Date(agora.getTime() + DIAS_MINIMOS_EXPIRACAO * MS_POR_DIA);
+  return `${diaBrasilia(alvo)}T23:59:59.000${OFFSET_BRASILIA}`;
 }
 
 /** Lê o corpo como JSON tolerando respostas vazias/não-JSON. */
