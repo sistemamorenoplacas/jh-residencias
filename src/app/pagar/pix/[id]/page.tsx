@@ -73,7 +73,7 @@ export default async function PagarPixPage({
       <div className="w-full max-w-md">
         <div className="mb-6 flex justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="JH Residências" className="h-16 w-auto" />
+          <img src="/logo.svg" alt="JH Residências" className="h-28 w-auto" />
         </div>
 
         <div className="card-surface overflow-hidden p-6 sm:p-8">
