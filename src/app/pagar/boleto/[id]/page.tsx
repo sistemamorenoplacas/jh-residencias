@@ -254,7 +254,8 @@ function BoletoContent({
         href={`/pagar/pix/${chargeId}`}
         className="mt-4 flex items-center gap-3 rounded-2xl border border-[var(--color-line-strong)] bg-white px-4 py-3.5 transition hover:bg-[var(--color-canvas)]"
       >
-        <IconPix className="size-6 shrink-0 text-[var(--color-brand)]" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/pix.svg" alt="Pix" className="size-6 shrink-0" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-[var(--color-ink)]">
             Prefere pagar com Pix?
@@ -419,19 +420,6 @@ function IconChevron({ className }: { className?: string }) {
       aria-hidden="true"
     >
       <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}
-
-function IconPix({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M12 2.4 21.6 12 12 21.6 2.4 12 12 2.4zm0 3.4L5.8 12l6.2 6.2L18.2 12 12 5.8z" />
     </svg>
   );
 }
