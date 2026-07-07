@@ -72,6 +72,19 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      // O template do WhatsApp foi aprovado com a URL de boleto SEM a barra
+      // (`/pagar/boleto{{1}}`), gerando `/pagar/boleto<uuid>` — que não bate na
+      // rota `/pagar/boleto/[id]` e cai em 404. Este redirect normaliza o link
+      // para `/pagar/boleto/<uuid>` sem depender de reeditar o template na Meta.
+      {
+        source: "/pagar/boleto:id([0-9a-fA-F-]{36})",
+        destination: "/pagar/boleto/:id",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
