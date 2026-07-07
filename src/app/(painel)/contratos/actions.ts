@@ -202,3 +202,28 @@ export async function alternarAtivoContrato(formData: FormData): Promise<void> {
 
   revalidatePath("/contratos");
 }
+
+/**
+ * Exclui um contrato ENCERRADO (`ativo = false`). As cobranças vinculadas caem
+ * por CASCADE (`charges.lease_id ON DELETE CASCADE`), assim como os pagamentos;
+ * as mensagens de WhatsApp têm o `charge_id` anulado. Um contrato ativo precisa
+ * ser encerrado antes — o guard `eq("ativo", false)` impede exclusão acidental.
+ */
+export async function excluirContrato(formData: FormData): Promise<void> {
+  const user = await requireUser();
+  const id = formData.get("id");
+  if (typeof id !== "string" || !id) {
+    return;
+  }
+
+  const supabase = await createServerClient();
+  await supabase
+    .from("leases")
+    .delete()
+    .eq("id", id)
+    .eq("owner_id", user.id)
+    .eq("ativo", false);
+
+  revalidatePath("/contratos");
+  revalidatePath("/cobrancas");
+}

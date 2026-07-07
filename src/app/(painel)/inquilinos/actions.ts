@@ -215,15 +215,30 @@ export async function excluirInquilino(
   }
 
   const supabase = await createServerClient();
-  const { error } = await supabase.from("tenants").delete().eq("id", id);
 
-  if (error) {
+  // `leases.tenant_id` é ON DELETE RESTRICT: os contratos do inquilino precisam
+  // sair antes (as cobranças vinculadas caem por CASCADE). Só então o inquilino
+  // pode ser removido. Tudo escopado ao dono pelo RLS.
+  const { error: leasesError } = await supabase
+    .from("leases")
+    .delete()
+    .eq("tenant_id", id);
+
+  if (leasesError) {
     return {
       ok: false,
-      error: "Não foi possível excluir. Verifique se há contratos vinculados.",
+      error: "Não foi possível excluir os contratos vinculados ao inquilino.",
     };
   }
 
+  const { error } = await supabase.from("tenants").delete().eq("id", id);
+
+  if (error) {
+    return { ok: false, error: "Não foi possível excluir o inquilino." };
+  }
+
   revalidatePath("/inquilinos");
+  revalidatePath("/contratos");
+  revalidatePath("/cobrancas");
   return { ok: true, error: null };
 }

@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 
-import { alternarAtivoContrato } from "@/app/(painel)/contratos/actions";
+import {
+  alternarAtivoContrato,
+  excluirContrato,
+} from "@/app/(painel)/contratos/actions";
 import { formatBRL } from "@/lib/money";
 import { formatData } from "@/lib/dates";
 import {
@@ -44,6 +47,36 @@ function ToggleAtivoButton({ id, ativo }: { id: string; ativo: boolean }) {
         className="rounded-pill px-3 py-1.5 text-xs font-medium text-muted hover:bg-canvas"
       >
         {ativo ? "Encerrar" : "Reativar"}
+      </button>
+    </form>
+  );
+}
+
+/**
+ * Excluir contrato — só aparece para contratos ENCERRADOS. Confirma antes,
+ * pois a exclusão remove também as cobranças vinculadas (irreversível).
+ */
+function ExcluirContratoButton({ id }: { id: string }) {
+  return (
+    <form
+      action={excluirContrato}
+      className="inline"
+      onSubmit={(e) => {
+        if (
+          !window.confirm(
+            "Excluir este contrato encerrado? As cobranças vinculadas também serão removidas. Esta ação não pode ser desfeita.",
+          )
+        ) {
+          e.preventDefault();
+        }
+      }}
+    >
+      <input type="hidden" name="id" value={id} />
+      <button
+        type="submit"
+        className="rounded-pill px-3 py-1.5 text-xs font-medium text-vencido hover:bg-vencido-tint"
+      >
+        Excluir
       </button>
     </form>
   );
@@ -202,6 +235,7 @@ export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
                       Editar
                     </button>
                     <ToggleAtivoButton id={l.id} ativo={l.ativo} />
+                    {!l.ativo && <ExcluirContratoButton id={l.id} />}
                   </div>
                 </td>
               </tr>
@@ -235,6 +269,7 @@ export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
                   Editar
                 </button>
                 <ToggleAtivoButton id={l.id} ativo={l.ativo} />
+                {!l.ativo && <ExcluirContratoButton id={l.id} />}
               </div>
             </div>
             <p className="mt-2 text-xs text-faint tnum">
