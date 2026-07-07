@@ -97,10 +97,12 @@ export default async function PagarPixPage({
     <main className="relative min-h-dvh overflow-hidden bg-[var(--color-canvas)] px-4 py-8">
       <Skyline />
       <div className="relative mx-auto w-full max-w-lg">
-        <div className="mb-5 flex justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="JH Residências" className="h-20 w-auto" />
-        </div>
+        {!emAberto && (
+          <div className="mb-5 flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.svg" alt="JH Residências" className="h-24 w-auto" />
+          </div>
+        )}
 
         <div className="rounded-3xl bg-white p-6 shadow-[0_24px_70px_-28px_rgba(5,35,81,0.35)] sm:p-8">
           <PixContent
@@ -171,13 +173,21 @@ function PixContent({
 
   return (
     <div>
-      <header className="text-center">
-        <h1 className="text-2xl font-bold text-[var(--color-brand-dark)]">
-          {nome ? `Olá, ${nome}!` : "Pagamento de aluguel"}
-        </h1>
-        <p className="mt-1.5 text-sm text-[var(--color-muted)]">
-          {imovel ? `${imovel} · ` : ""}Aluguel de {competencia}
-        </p>
+      <header className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-[var(--color-brand-dark)]">
+            {nome ? `Olá, ${nome}!` : "Pagamento de aluguel"}
+          </h1>
+          <p className="mt-1.5 text-sm text-[var(--color-muted)]">
+            {imovel ? `${imovel} · ` : ""}Aluguel de {competencia}
+          </p>
+        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.svg"
+          alt="JH Residências"
+          className="h-24 w-auto shrink-0"
+        />
       </header>
 
       <div className="relative mt-6 overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--color-brand-dark)] to-[var(--color-brand)] px-6 py-6 text-center text-white">
