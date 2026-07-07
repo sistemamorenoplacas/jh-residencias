@@ -387,31 +387,14 @@ function IconHelp({ className }: { className?: string }) {
   );
 }
 
-/** Selo aproximado do Mercado Pago (marca do parceiro de pagamento). */
+/** Selo oficial do Mercado Pago (marca do parceiro de pagamento). */
 function MercadoPagoLogo() {
   return (
-    <div className="flex shrink-0 items-center gap-1.5">
-      <svg
-        viewBox="0 0 40 28"
-        className="h-6 w-auto"
-        aria-hidden="true"
-        fill="#009ee3"
-      >
-        <ellipse cx="20" cy="14" rx="20" ry="12" />
-        <path
-          d="M9 15c3 3 8 4 11 1 2 2 6 1 8-1"
-          fill="none"
-          stroke="#fff"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span className="text-[9px] font-bold uppercase leading-[1.1] tracking-tight text-[#009ee3]">
-        mercado
-        <br />
-        pago
-      </span>
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/mercado-pago.svg"
+      alt="Mercado Pago"
+      className="h-9 w-auto shrink-0"
+    />
   );
 }
