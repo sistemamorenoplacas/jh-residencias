@@ -172,7 +172,7 @@ function BoletoContent({
         <img
           src="/logo.svg"
           alt="JH Residências"
-          className="h-24 w-auto shrink-0"
+          className="h-32 w-auto shrink-0"
         />
       </header>
 
