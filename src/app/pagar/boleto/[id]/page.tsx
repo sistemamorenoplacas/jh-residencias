@@ -5,20 +5,18 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { formatBRL } from "@/lib/money";
 import { formatCompetencia, formatData } from "@/lib/dates";
 import type { ChargeStatusDb } from "@/lib/db-types";
+import { getSettings } from "@/lib/settings";
 import { CopyPixButton } from "../../pix/[id]/CopyPixButton";
 
 // Status pode mudar (pago via webhook) — nunca cachear a página.
 export const dynamic = "force-dynamic";
-
-/** Contato exibido no rodapé de ajuda. */
-const SUPORTE_WHATSAPP = "(31) 99999-9999";
-const SUPORTE_EMAIL = "financeiro@jhresidencias.com.br";
 
 /** UUID do Postgres; evita bater no banco com id inválido. */
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface ChargeBoletoPublica {
+  owner_id: string;
   competencia: string;
   vencimento: string;
   valor_centavos: number;
@@ -37,7 +35,7 @@ async function buscarCharge(id: string): Promise<ChargeBoletoPublica | null> {
   const { data, error } = await supabase
     .from("charges")
     .select(
-      "competencia, vencimento, valor_centavos, status, boleto_url, boleto_linha_digitavel, leases(properties(nome), tenants(nome))",
+      "owner_id, competencia, vencimento, valor_centavos, status, boleto_url, boleto_linha_digitavel, leases(properties(nome), tenants(nome))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -77,6 +75,7 @@ export default async function PagarBoletoPage({
   const valor = formatBRL(charge.valor_centavos);
   const competencia = formatCompetencia(charge.competencia);
   const vencimento = formatData(charge.vencimento);
+  const settings = await getSettings(charge.owner_id);
 
   return (
     <main className="relative min-h-dvh overflow-hidden bg-[var(--color-canvas)] px-4 py-8">
@@ -98,6 +97,8 @@ export default async function PagarBoletoPage({
             competencia={competencia}
             vencimento={vencimento}
             chargeId={id}
+            suporteWhatsapp={settings.suporteWhatsapp}
+            suporteEmail={settings.suporteEmail}
           />
         </div>
 
@@ -118,6 +119,8 @@ function BoletoContent({
   competencia,
   vencimento,
   chargeId,
+  suporteWhatsapp,
+  suporteEmail,
 }: {
   charge: ChargeBoletoPublica;
   nome: string;
@@ -126,6 +129,8 @@ function BoletoContent({
   competencia: string;
   vencimento: string;
   chargeId: string;
+  suporteWhatsapp: string;
+  suporteEmail: string;
 }) {
   if (charge.status === "pago") {
     return (
@@ -286,8 +291,8 @@ function BoletoContent({
           Precisa de ajuda?
         </p>
         <p className="mt-1 text-[11px] leading-relaxed text-[var(--color-muted)]">
-          Fale conosco pelo WhatsApp {SUPORTE_WHATSAPP} ou pelo e-mail{" "}
-          {SUPORTE_EMAIL}
+          Fale conosco pelo WhatsApp {suporteWhatsapp} ou pelo e-mail{" "}
+          {suporteEmail}
         </p>
       </div>
     </div>

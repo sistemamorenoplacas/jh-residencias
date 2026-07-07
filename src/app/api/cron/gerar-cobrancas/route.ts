@@ -39,6 +39,7 @@ import {
   PAYER_EMAIL_FALLBACK,
 } from "@/lib/charges-repo";
 import { criarCobrancaPix } from "@/lib/mercadopago";
+import { ownersComAutomacaoDesligada } from "@/lib/settings";
 import { cobrancaAluguel } from "@/lib/whatsapp";
 import { formatAmount } from "@/lib/money";
 import { formatCompetencia, formatData } from "@/lib/dates";
@@ -242,7 +243,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const competencia = competenciaAtual(new Date());
-    const leases = await listarLeasesAtivos();
+    const todosLeases = await listarLeasesAtivos();
+    // Pula donos que desligaram a cobrança automática nas Configurações.
+    const desligados = await ownersComAutomacaoDesligada("cobranca_automatica");
+    const leases = todosLeases.filter((l) => !desligados.has(l.owner_id));
     leasesPorId = new Map(leases.map((l) => [l.id, l]));
 
     const planos = planejarCobrancasDoMes(leases, competencia);

@@ -6,14 +6,11 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { formatBRL } from "@/lib/money";
 import { formatCompetencia, formatData } from "@/lib/dates";
 import type { ChargeStatusDb } from "@/lib/db-types";
+import { getSettings } from "@/lib/settings";
 import { CopyPixButton } from "./CopyPixButton";
 
 // Status pode mudar (pago via webhook) — nunca cachear a página.
 export const dynamic = "force-dynamic";
-
-/** Contato exibido no rodapé de ajuda. */
-const SUPORTE_WHATSAPP = "(31) 99999-9999";
-const SUPORTE_EMAIL = "financeiro@jhresidencias.com.br";
 
 /** UUID do Postgres; evita bater no banco com id inválido. */
 const UUID_RE =
@@ -21,6 +18,7 @@ const UUID_RE =
 
 /** Shape mínimo do charge para a página pública (sem PII além do 1º nome). */
 interface ChargePublica {
+  owner_id: string;
   competencia: string;
   vencimento: string;
   valor_centavos: number;
@@ -39,7 +37,7 @@ async function buscarCharge(id: string): Promise<ChargePublica | null> {
   const { data, error } = await supabase
     .from("charges")
     .select(
-      "competencia, vencimento, valor_centavos, status, pix_copia_cola, link_pagamento, leases(properties(nome), tenants(nome))",
+      "owner_id, competencia, vencimento, valor_centavos, status, pix_copia_cola, link_pagamento, leases(properties(nome), tenants(nome))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -87,6 +85,8 @@ export default async function PagarPixPage({
   const competencia = formatCompetencia(charge.competencia);
   const vencimento = formatData(charge.vencimento);
 
+  const settings = await getSettings(charge.owner_id);
+
   const emAberto = charge.status === "pendente" || charge.status === "vencido";
   const qrDataUrl =
     emAberto && charge.pix_copia_cola
@@ -113,6 +113,8 @@ export default async function PagarPixPage({
             competencia={competencia}
             vencimento={vencimento}
             qrDataUrl={qrDataUrl}
+            suporteWhatsapp={settings.suporteWhatsapp}
+            suporteEmail={settings.suporteEmail}
           />
         </div>
 
@@ -132,6 +134,8 @@ function PixContent({
   competencia,
   vencimento,
   qrDataUrl,
+  suporteWhatsapp,
+  suporteEmail,
 }: {
   charge: ChargePublica;
   nome: string;
@@ -140,6 +144,8 @@ function PixContent({
   competencia: string;
   vencimento: string;
   qrDataUrl: string | null;
+  suporteWhatsapp: string;
+  suporteEmail: string;
 }) {
   if (charge.status === "pago") {
     return (
@@ -272,8 +278,8 @@ function PixContent({
           Precisa de ajuda?
         </p>
         <p className="mt-1 text-[11px] leading-relaxed text-[var(--color-muted)]">
-          Fale conosco pelo WhatsApp {SUPORTE_WHATSAPP} ou pelo e-mail{" "}
-          {SUPORTE_EMAIL}
+          Fale conosco pelo WhatsApp {suporteWhatsapp} ou pelo e-mail{" "}
+          {suporteEmail}
         </p>
       </div>
     </div>

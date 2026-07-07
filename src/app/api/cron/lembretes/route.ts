@@ -34,6 +34,7 @@ import {
 } from "@/lib/charges-repo";
 import { formatBRL } from "@/lib/money";
 import { formatCompetencia, formatData } from "@/lib/dates";
+import { ownersComAutomacaoDesligada } from "@/lib/settings";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -223,9 +224,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Pula donos que desligaram os lembretes nas Configurações.
+  const semLembretes = await ownersComAutomacaoDesligada("lembretes_ativos");
+
   let lembretesEnviados = 0;
   for (const lembrete of lembretes) {
     if (jaLembradas.has(lembrete.charge.id)) continue;
+    if (semLembretes.has(lembrete.charge.owner_id)) continue;
 
     try {
       await processarLembrete(lembrete);

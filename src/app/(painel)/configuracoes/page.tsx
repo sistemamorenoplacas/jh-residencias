@@ -2,15 +2,14 @@ import type { Metadata } from "next";
 
 import { AppShell } from "@/components/shell/AppShell";
 import { GerarCobrancasButton } from "@/components/config/GerarCobrancasButton";
+import { ConfigForm } from "@/components/config/ConfigForm";
+import { requireUser } from "@/lib/auth";
+import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = { title: "Configurações — JH Residências" };
 
 // Lê secrets só para reportar presença — nenhum valor atravessa a fronteira.
 export const dynamic = "force-dynamic";
-
-/** Contato de suporte exibido nas páginas de pagamento. */
-const SUPORTE_WHATSAPP = "(31) 99999-9999";
-const SUPORTE_EMAIL = "financeiro@jhresidencias.com.br";
 
 function temEnv(...nomes: string[]): boolean {
   return nomes.every((n) => {
@@ -38,35 +37,10 @@ function StatusPill({ ok }: { ok: boolean }) {
   );
 }
 
-function IconCheck() {
-  return (
-    <svg
-      className="mt-0.5 size-4 shrink-0 text-pago"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
-  );
-}
+export default async function ConfiguracoesPage() {
+  const user = await requireUser();
+  const settings = await getSettings(user.id);
 
-function AutomacaoItem({ titulo, texto }: { titulo: string; texto: string }) {
-  return (
-    <li className="flex items-start gap-3">
-      <IconCheck />
-      <p className="text-sm text-muted">
-        <span className="font-medium text-ink">{titulo}</span> — {texto}
-      </p>
-    </li>
-  );
-}
-
-export default function ConfiguracoesPage() {
   const conexoes: Conexao[] = [
     {
       nome: "Pix (Mercado Pago)",
@@ -86,58 +60,31 @@ export default function ConfiguracoesPage() {
   ];
 
   return (
-    <AppShell
-      title="Configurações"
-      subtitle="Automação e conexões do sistema"
-    >
+    <AppShell title="Configurações" subtitle="Automação e conexões do sistema">
       <div className="flex flex-col gap-6">
-        {/* Automação de cobranças */}
+        {/* Formulário editável: automação + contato de suporte */}
+        <ConfigForm settings={settings} />
+
+        {/* Ação manual: gerar cobranças do mês agora */}
         <section className="overflow-hidden rounded-card border border-line bg-surface">
-          <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
-            <div className="min-w-0">
-              <h2 className="text-base font-semibold tracking-tight text-ink">
-                Cobrança automática
-              </h2>
-              <p className="mt-0.5 text-sm text-muted">
-                O sistema cobra seus inquilinos sozinho, todo mês.
-              </p>
-            </div>
-            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-pill bg-pago-tint px-2.5 py-1 text-xs font-semibold text-pago">
-              <span className="size-1.5 rounded-full bg-current" />
-              Ativa
-            </span>
+          <header className="border-b border-line px-5 py-4">
+            <h2 className="text-base font-semibold tracking-tight text-ink">
+              Cobrar agora
+            </h2>
+            <p className="mt-0.5 text-sm text-muted">
+              Gera as cobranças do mês atual sem esperar o dia 1º.
+            </p>
           </header>
-
           <div className="px-5 py-4">
-            <ul className="flex flex-col gap-3">
-              <AutomacaoItem
-                titulo="Todo dia 1º"
-                texto="as cobranças do mês são geradas para cada contrato ativo, com o Pix (e boleto, quando há endereço) enviado por WhatsApp."
-              />
-              <AutomacaoItem
-                titulo="Lembretes automáticos"
-                texto="enviados 3 dias antes do vencimento, no dia do vencimento e após o atraso."
-              />
-              <AutomacaoItem
-                titulo="Baixa automática"
-                texto="quando o pagamento cai, a cobrança é marcada como paga na hora — sem você fazer nada."
-              />
-            </ul>
-
-            <div className="mt-5 rounded-xl bg-canvas px-4 py-4">
-              <p className="text-sm font-medium text-ink">
-                Precisa cobrar agora, sem esperar o dia 1º?
-              </p>
-              <p className="mb-3 mt-0.5 text-xs text-muted">
-                Gera as cobranças do mês atual para todos os contratos ativos.
-                Quem já foi cobrado neste mês é ignorado (não recebe de novo).
-              </p>
-              <GerarCobrancasButton />
-            </div>
+            <p className="mb-3 text-xs text-muted">
+              Cria e envia as cobranças de todos os contratos ativos. Quem já foi
+              cobrado neste mês é ignorado (não recebe de novo).
+            </p>
+            <GerarCobrancasButton />
           </div>
         </section>
 
-        {/* Conexões */}
+        {/* Conexões (somente leitura) */}
         <section className="overflow-hidden rounded-card border border-line bg-surface">
           <header className="border-b border-line px-5 py-4">
             <h2 className="text-base font-semibold tracking-tight text-ink">
@@ -162,32 +109,6 @@ export default function ConfiguracoesPage() {
               </li>
             ))}
           </ul>
-        </section>
-
-        {/* Contato de suporte */}
-        <section className="overflow-hidden rounded-card border border-line bg-surface">
-          <header className="border-b border-line px-5 py-4">
-            <h2 className="text-base font-semibold tracking-tight text-ink">
-              Contato de suporte
-            </h2>
-            <p className="mt-0.5 text-sm text-muted">
-              Aparece para o inquilino nas páginas de pagamento (Pix e boleto).
-            </p>
-          </header>
-          <div className="grid gap-4 px-5 py-4 sm:grid-cols-2">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-faint">
-                WhatsApp
-              </p>
-              <p className="mt-1 font-medium text-ink">{SUPORTE_WHATSAPP}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-faint">
-                E-mail
-              </p>
-              <p className="mt-1 font-medium text-ink">{SUPORTE_EMAIL}</p>
-            </div>
-          </div>
         </section>
       </div>
     </AppShell>
