@@ -306,8 +306,9 @@ export function TenantList({ tenants }: TenantListProps) {
       {confirmTarget ? (
         <ConfirmModal
           title="Excluir inquilino"
-          message={`Tem certeza que deseja excluir "${confirmTarget.nome}"? Esta ação não pode ser desfeita.`}
+          message={`Excluir "${confirmTarget.nome}" também remove os contratos e cobranças vinculados a ele. Esta ação não pode ser desfeita.`}
           confirmLabel="Excluir"
+          confirmPhrase="excluir inquilino"
           onConfirm={() => confirmarDelete(confirmTarget)}
           onCancel={() => setConfirmTarget(null)}
         />

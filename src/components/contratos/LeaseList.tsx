@@ -6,6 +6,7 @@ import {
   alternarAtivoContrato,
   excluirContrato,
 } from "@/app/(painel)/contratos/actions";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { formatBRL } from "@/lib/money";
 import { formatData } from "@/lib/dates";
 import {
@@ -56,29 +57,15 @@ function ToggleAtivoButton({ id, ativo }: { id: string; ativo: boolean }) {
  * Excluir contrato — só aparece para contratos ENCERRADOS. Confirma antes,
  * pois a exclusão remove também as cobranças vinculadas (irreversível).
  */
-function ExcluirContratoButton({ id }: { id: string }) {
+function ExcluirContratoButton({ onClick }: { onClick: () => void }) {
   return (
-    <form
-      action={excluirContrato}
-      className="inline"
-      onSubmit={(e) => {
-        if (
-          !window.confirm(
-            "Excluir este contrato encerrado? As cobranças vinculadas também serão removidas. Esta ação não pode ser desfeita.",
-          )
-        ) {
-          e.preventDefault();
-        }
-      }}
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-pill px-3 py-1.5 text-xs font-medium text-vencido hover:bg-vencido-tint"
     >
-      <input type="hidden" name="id" value={id} />
-      <button
-        type="submit"
-        className="rounded-pill px-3 py-1.5 text-xs font-medium text-vencido hover:bg-vencido-tint"
-      >
-        Excluir
-      </button>
-    </form>
+      Excluir
+    </button>
   );
 }
 
@@ -91,6 +78,14 @@ export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [busca, setBusca] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  async function handleExcluirContrato(id: string) {
+    const formData = new FormData();
+    formData.set("id", id);
+    await excluirContrato(formData);
+    setConfirmDeleteId(null);
+  }
 
   const editing = leases.find((l) => l.id === editingId) ?? null;
 
@@ -235,7 +230,11 @@ export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
                       Editar
                     </button>
                     <ToggleAtivoButton id={l.id} ativo={l.ativo} />
-                    {!l.ativo && <ExcluirContratoButton id={l.id} />}
+                    {!l.ativo && (
+                      <ExcluirContratoButton
+                        onClick={() => setConfirmDeleteId(l.id)}
+                      />
+                    )}
                   </div>
                 </td>
               </tr>
@@ -269,7 +268,11 @@ export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
                   Editar
                 </button>
                 <ToggleAtivoButton id={l.id} ativo={l.ativo} />
-                {!l.ativo && <ExcluirContratoButton id={l.id} />}
+                {!l.ativo && (
+                      <ExcluirContratoButton
+                        onClick={() => setConfirmDeleteId(l.id)}
+                      />
+                    )}
               </div>
             </div>
             <p className="mt-2 text-xs text-faint tnum">
@@ -279,6 +282,17 @@ export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
           </li>
         ))}
       </ul>
+
+      {confirmDeleteId ? (
+        <ConfirmModal
+          title="Excluir contrato"
+          message="Excluir este contrato encerrado também remove as cobranças vinculadas a ele. Esta ação não pode ser desfeita."
+          confirmLabel="Excluir"
+          confirmPhrase="excluir contrato"
+          onConfirm={() => handleExcluirContrato(confirmDeleteId)}
+          onCancel={() => setConfirmDeleteId(null)}
+        />
+      ) : null}
     </div>
   );
 }
