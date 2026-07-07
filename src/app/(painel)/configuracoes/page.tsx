@@ -1,181 +1,195 @@
 import type { Metadata } from "next";
+
 import { AppShell } from "@/components/shell/AppShell";
+import { GerarCobrancasButton } from "@/components/config/GerarCobrancasButton";
 
 export const metadata: Metadata = { title: "Configurações — JH Residências" };
 
-/**
- * Página de status das integrações.
- *
- * Server Component. Lê as variáveis de ambiente APENAS para reportar
- * presença/ausência ("configurado" / "ausente"). NUNCA expõe o valor de
- * nenhum secret ao client — só o booleano de presença atravessa a fronteira.
- *
- * Como é renderizada no server e não passa valores ao browser, é seguro ler
- * `process.env` diretamente aqui. Checamos cada variável de forma
- * independente (em vez de `serverEnv()`, que lança se qualquer uma faltar)
- * para que a própria página de diagnóstico funcione mesmo com config parcial.
- */
+// Lê secrets só para reportar presença — nenhum valor atravessa a fronteira.
+export const dynamic = "force-dynamic";
 
-interface EnvVarSpec {
-  name: string;
+/** Contato de suporte exibido nas páginas de pagamento. */
+const SUPORTE_WHATSAPP = "(31) 99999-9999";
+const SUPORTE_EMAIL = "financeiro@jhresidencias.com.br";
+
+function temEnv(...nomes: string[]): boolean {
+  return nomes.every((n) => {
+    const v = process.env[n];
+    return typeof v === "string" && v.trim().length > 0;
+  });
+}
+
+interface Conexao {
+  nome: string;
   descricao: string;
+  ok: boolean;
 }
 
-interface IntegracaoGrupo {
-  titulo: string;
-  resumo: string;
-  vars: EnvVarSpec[];
-}
-
-const GRUPOS: IntegracaoGrupo[] = [
-  {
-    titulo: "Supabase",
-    resumo: "Banco de dados, autenticação e RLS por proprietário.",
-    vars: [
-      { name: "NEXT_PUBLIC_SUPABASE_URL", descricao: "URL do projeto Supabase" },
-      { name: "NEXT_PUBLIC_SUPABASE_ANON_KEY", descricao: "Chave pública (anon) — respeita RLS" },
-      { name: "SUPABASE_SERVICE_ROLE_KEY", descricao: "Chave de serviço — ignora RLS (cron/webhooks)" },
-    ],
-  },
-  {
-    titulo: "Mercado Pago",
-    resumo: "Geração de Pix e confirmação de pagamento via webhook.",
-    vars: [
-      { name: "MP_ACCESS_TOKEN", descricao: "Token de acesso da API" },
-      { name: "MP_WEBHOOK_SECRET", descricao: "Segredo para validar a assinatura do webhook" },
-    ],
-  },
-  {
-    titulo: "WhatsApp (Graph API)",
-    resumo: "Envio de cobranças, lembretes e confirmações por template.",
-    vars: [
-      { name: "WHATSAPP_TOKEN", descricao: "Bearer token da Graph API" },
-      { name: "WHATSAPP_PHONE_NUMBER_ID", descricao: "ID do número remetente" },
-      { name: "WHATSAPP_VERIFY_TOKEN", descricao: "Token de verificação do webhook (GET)" },
-      { name: "WHATSAPP_APP_SECRET", descricao: "App secret para validar X-Hub-Signature-256" },
-    ],
-  },
-  {
-    titulo: "Automação",
-    resumo: "Rotinas agendadas (geração de cobranças, lembretes, baixa de vencidas).",
-    vars: [
-      { name: "CRON_SECRET", descricao: "Segredo que autentica as chamadas de cron" },
-      { name: "APP_BASE_URL", descricao: "URL base pública da aplicação" },
-    ],
-  },
-];
-
-/** True somente se a variável existe e não é string vazia. Não retorna o valor. */
-function estaConfigurada(name: string): boolean {
-  const valor = process.env[name];
-  return typeof valor === "string" && valor.trim().length > 0;
-}
-
-function StatusBadge({ ok }: { ok: boolean }) {
-  if (ok) {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-pill bg-pago-tint px-2.5 py-1 text-xs font-semibold text-pago">
-        <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 6 9 17l-5-5" />
-        </svg>
-        Configurado
-      </span>
-    );
-  }
+function StatusPill({ ok }: { ok: boolean }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-pill bg-vencido-tint px-2.5 py-1 text-xs font-semibold text-vencido">
-      <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
-      </svg>
-      Ausente
+    <span
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-pill px-2.5 py-1 text-xs font-semibold ${
+        ok ? "bg-pago-tint text-pago" : "bg-pendente-tint text-pendente"
+      }`}
+    >
+      <span className="size-1.5 rounded-full bg-current" />
+      {ok ? "Conectado" : "Pendente"}
     </span>
   );
 }
 
-function IntegracaoCard({ grupo }: { grupo: IntegracaoGrupo }) {
-  const status = grupo.vars.map((v) => ({ ...v, ok: estaConfigurada(v.name) }));
-  const configuradas = status.filter((s) => s.ok).length;
-  const total = status.length;
-  const tudoOk = configuradas === total;
-
+function IconCheck() {
   return (
-    <section className="overflow-hidden rounded-card border border-line bg-surface">
-      <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold tracking-tight text-ink">{grupo.titulo}</h2>
-          <p className="mt-0.5 text-sm text-muted">{grupo.resumo}</p>
-        </div>
-        <span
-          className={`shrink-0 rounded-pill px-2.5 py-1 text-xs font-semibold ${
-            tudoOk ? "bg-pago-tint text-pago" : "bg-pendente-tint text-pendente"
-          }`}
-        >
-          {configuradas}/{total}
-        </span>
-      </header>
-      <ul className="divide-y divide-line">
-        {status.map((s) => (
-          <li key={s.name} className="flex items-center justify-between gap-4 px-5 py-3">
-            <div className="min-w-0">
-              <p className="truncate font-mono text-sm font-medium text-ink">{s.name}</p>
-              <p className="truncate text-xs text-faint">{s.descricao}</p>
-            </div>
-            <StatusBadge ok={s.ok} />
-          </li>
-        ))}
-      </ul>
-    </section>
+    <svg
+      className="mt-0.5 size-4 shrink-0 text-pago"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
+function AutomacaoItem({ titulo, texto }: { titulo: string; texto: string }) {
+  return (
+    <li className="flex items-start gap-3">
+      <IconCheck />
+      <p className="text-sm text-muted">
+        <span className="font-medium text-ink">{titulo}</span> — {texto}
+      </p>
+    </li>
   );
 }
 
 export default function ConfiguracoesPage() {
-  const todasVars = GRUPOS.flatMap((g) => g.vars);
-  const totalConfiguradas = todasVars.filter((v) => estaConfigurada(v.name)).length;
-  const total = todasVars.length;
+  const conexoes: Conexao[] = [
+    {
+      nome: "Pix (Mercado Pago)",
+      descricao: "Geração de Pix/boleto e confirmação de pagamento.",
+      ok: temEnv("MP_ACCESS_TOKEN", "MP_WEBHOOK_SECRET"),
+    },
+    {
+      nome: "WhatsApp",
+      descricao: "Envio de cobranças, lembretes e confirmações.",
+      ok: temEnv("WHATSAPP_TOKEN", "WHATSAPP_PHONE_NUMBER_ID"),
+    },
+    {
+      nome: "Banco de dados",
+      descricao: "Imóveis, inquilinos, contratos e cobranças.",
+      ok: temEnv("NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"),
+    },
+  ];
 
   return (
     <AppShell
       title="Configurações"
-      subtitle="Status das integrações"
+      subtitle="Automação e conexões do sistema"
     >
-      <section className="mb-6 rounded-card border border-line bg-surface px-5 py-4">
-        <p className="text-sm text-muted">
-          {totalConfiguradas} de {total} variáveis de ambiente configuradas. Os valores
-          dos segredos nunca são exibidos — apenas a presença é verificada no servidor.
-        </p>
-      </section>
+      <div className="flex flex-col gap-6">
+        {/* Automação de cobranças */}
+        <section className="overflow-hidden rounded-card border border-line bg-surface">
+          <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
+            <div className="min-w-0">
+              <h2 className="text-base font-semibold tracking-tight text-ink">
+                Cobrança automática
+              </h2>
+              <p className="mt-0.5 text-sm text-muted">
+                O sistema cobra seus inquilinos sozinho, todo mês.
+              </p>
+            </div>
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-pill bg-pago-tint px-2.5 py-1 text-xs font-semibold text-pago">
+              <span className="size-1.5 rounded-full bg-current" />
+              Ativa
+            </span>
+          </header>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {GRUPOS.map((grupo) => (
-          <IntegracaoCard key={grupo.titulo} grupo={grupo} />
-        ))}
+          <div className="px-5 py-4">
+            <ul className="flex flex-col gap-3">
+              <AutomacaoItem
+                titulo="Todo dia 1º"
+                texto="as cobranças do mês são geradas para cada contrato ativo, com o Pix (e boleto, quando há endereço) enviado por WhatsApp."
+              />
+              <AutomacaoItem
+                titulo="Lembretes automáticos"
+                texto="enviados 3 dias antes do vencimento, no dia do vencimento e após o atraso."
+              />
+              <AutomacaoItem
+                titulo="Baixa automática"
+                texto="quando o pagamento cai, a cobrança é marcada como paga na hora — sem você fazer nada."
+              />
+            </ul>
+
+            <div className="mt-5 rounded-xl bg-canvas px-4 py-4">
+              <p className="text-sm font-medium text-ink">
+                Precisa cobrar agora, sem esperar o dia 1º?
+              </p>
+              <p className="mb-3 mt-0.5 text-xs text-muted">
+                Gera as cobranças do mês atual para todos os contratos ativos.
+                Quem já foi cobrado neste mês é ignorado (não recebe de novo).
+              </p>
+              <GerarCobrancasButton />
+            </div>
+          </div>
+        </section>
+
+        {/* Conexões */}
+        <section className="overflow-hidden rounded-card border border-line bg-surface">
+          <header className="border-b border-line px-5 py-4">
+            <h2 className="text-base font-semibold tracking-tight text-ink">
+              Conexões
+            </h2>
+            <p className="mt-0.5 text-sm text-muted">
+              Serviços que fazem o sistema funcionar. Todos precisam estar
+              conectados.
+            </p>
+          </header>
+          <ul className="divide-y divide-line">
+            {conexoes.map((c) => (
+              <li
+                key={c.nome}
+                className="flex items-center justify-between gap-4 px-5 py-3.5"
+              >
+                <div className="min-w-0">
+                  <p className="font-medium text-ink">{c.nome}</p>
+                  <p className="text-xs text-faint">{c.descricao}</p>
+                </div>
+                <StatusPill ok={c.ok} />
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Contato de suporte */}
+        <section className="overflow-hidden rounded-card border border-line bg-surface">
+          <header className="border-b border-line px-5 py-4">
+            <h2 className="text-base font-semibold tracking-tight text-ink">
+              Contato de suporte
+            </h2>
+            <p className="mt-0.5 text-sm text-muted">
+              Aparece para o inquilino nas páginas de pagamento (Pix e boleto).
+            </p>
+          </header>
+          <div className="grid gap-4 px-5 py-4 sm:grid-cols-2">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-faint">
+                WhatsApp
+              </p>
+              <p className="mt-1 font-medium text-ink">{SUPORTE_WHATSAPP}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-faint">
+                E-mail
+              </p>
+              <p className="mt-1 font-medium text-ink">{SUPORTE_EMAIL}</p>
+            </div>
+          </div>
+        </section>
       </div>
-
-      <section className="mt-8 rounded-card border border-line bg-surface px-5 py-5">
-        <h2 className="text-base font-semibold tracking-tight text-ink">Como configurar</h2>
-        <ol className="mt-3 flex flex-col gap-2 text-sm text-muted">
-          <li>
-            <span className="font-medium text-ink">1.</span> Defina as variáveis ausentes no
-            painel da Vercel (Project Settings → Environment Variables) ou no arquivo{" "}
-            <code className="rounded bg-canvas px-1.5 py-0.5 font-mono text-xs text-ink">.env.local</code>{" "}
-            em desenvolvimento.
-          </li>
-          <li>
-            <span className="font-medium text-ink">2.</span> As chaves{" "}
-            <code className="rounded bg-canvas px-1.5 py-0.5 font-mono text-xs text-ink">NEXT_PUBLIC_*</code>{" "}
-            são expostas ao navegador; as demais são secretas e ficam apenas no servidor.
-          </li>
-          <li>
-            <span className="font-medium text-ink">3.</span> Após alterar variáveis na Vercel,
-            refaça o deploy para que entrem em vigor.
-          </li>
-          <li>
-            <span className="font-medium text-ink">4.</span> Consulte{" "}
-            <code className="rounded bg-canvas px-1.5 py-0.5 font-mono text-xs text-ink">.env.example</code>{" "}
-            para a lista completa e o formato esperado de cada variável.
-          </li>
-        </ol>
-      </section>
     </AppShell>
   );
 }

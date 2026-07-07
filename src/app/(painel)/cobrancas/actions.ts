@@ -21,6 +21,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import type { DbCharge, DbLease, DbTenant } from "@/lib/db-types";
 import {
   planejarCobrancasDoMes,
+  competenciaAtual,
   type ChargePlan,
 } from "@/lib/charge-generation";
 import {
@@ -425,4 +426,72 @@ export async function marcarPagoManualmente(
   } catch (error: unknown) {
     return { ok: false, error: mensagemErro(error) };
   }
+}
+
+/** Resultado do disparo manual de geração do mês (para o painel de config). */
+export interface GerarLoteState {
+  ok: boolean;
+  message: string;
+}
+
+/**
+ * Gera (sob demanda) as cobranças do mês corrente para TODOS os contratos
+ * ativos do admin logado — a mesma automação que o cron roda dia 1, mas manual.
+ *
+ * Idempotente: pula os contratos que já têm cobrança na competência atual, para
+ * não recriar nem reenviar WhatsApp. Cada contrato novo passa pelo fluxo padrão
+ * (`gerarCobrancaAvulsa`): cria a charge, gera Pix + boleto e notifica.
+ */
+export async function gerarCobrancasDoMes(): Promise<GerarLoteState> {
+  const user = await requireUser();
+  const competencia = competenciaAtual(new Date());
+  const supabase = createServiceClient();
+
+  const { data: leases, error } = await supabase
+    .from("leases")
+    .select("id")
+    .eq("owner_id", user.id)
+    .eq("ativo", true);
+
+  if (error) {
+    return { ok: false, message: "Falha ao listar os contratos ativos." };
+  }
+
+  const ativos = (leases ?? []) as { id: string }[];
+  if (ativos.length === 0) {
+    return { ok: true, message: "Nenhum contrato ativo para gerar cobranças." };
+  }
+
+  let geradas = 0;
+  let jaExistiam = 0;
+  let avisos = 0;
+
+  for (const lease of ativos) {
+    const { data: existente } = await supabase
+      .from("charges")
+      .select("id")
+      .eq("lease_id", lease.id)
+      .eq("competencia", competencia)
+      .maybeSingle();
+
+    if (existente) {
+      jaExistiam += 1;
+      continue;
+    }
+
+    const resultado = await gerarCobrancaAvulsa(lease.id, competencia);
+    if (resultado.ok) {
+      geradas += 1;
+    } else {
+      avisos += 1;
+    }
+  }
+
+  revalidatePath("/cobrancas");
+
+  const partes = [`${geradas} cobrança(s) gerada(s) e enviada(s)`];
+  if (jaExistiam > 0) partes.push(`${jaExistiam} já existia(m) este mês`);
+  if (avisos > 0) partes.push(`${avisos} com aviso`);
+
+  return { ok: true, message: `${partes.join(" · ")}.` };
 }
