@@ -66,6 +66,25 @@ const IconHome = (
   </svg>
 );
 
+/** Miniatura da foto do imóvel (ou ícone quando não há foto). */
+function PropertyThumb({ property }: { property: DbProperty }) {
+  if (property.foto_url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={property.foto_url}
+        alt={property.nome}
+        className="size-12 shrink-0 rounded-lg object-cover"
+      />
+    );
+  }
+  return (
+    <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-canvas">
+      {IconHome}
+    </span>
+  );
+}
+
 export function PropertyList({ properties }: PropertyListProps) {
   const [editing, setEditing] = useState<DbProperty | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<DbProperty | null>(null);
@@ -125,7 +144,17 @@ export function PropertyList({ properties }: PropertyListProps) {
             <tbody>
               {filtrados.map((property) => (
                 <tr key={property.id}>
-                  <td className="font-medium text-ink">{property.nome}</td>
+                  <td className="font-medium text-ink">
+                    <button
+                      type="button"
+                      onClick={() => setEditing(property)}
+                      className="flex items-center gap-3 text-left transition-opacity hover:opacity-80"
+                      aria-label={`Editar ${property.nome}`}
+                    >
+                      <PropertyThumb property={property} />
+                      <span>{property.nome}</span>
+                    </button>
+                  </td>
                   <td className="text-muted">{property.endereco}</td>
                   <td>
                     <span className="badge bg-canvas text-muted">{TIPO_LABEL[property.tipo]}</span>
@@ -160,11 +189,19 @@ export function PropertyList({ properties }: PropertyListProps) {
           <ul className="divide-y divide-line sm:hidden">
             {filtrados.map((property) => (
               <li key={property.id} className="flex items-start justify-between gap-3 p-4">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-ink">{property.nome}</p>
-                  <p className="mt-0.5 truncate text-sm text-muted">{property.endereco}</p>
-                  <span className="badge mt-2 bg-canvas text-muted">{TIPO_LABEL[property.tipo]}</span>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditing(property)}
+                  className="flex min-w-0 items-start gap-3 text-left"
+                  aria-label={`Editar ${property.nome}`}
+                >
+                  <PropertyThumb property={property} />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-ink">{property.nome}</p>
+                    <p className="mt-0.5 truncate text-sm text-muted">{property.endereco}</p>
+                    <span className="badge mt-2 bg-canvas text-muted">{TIPO_LABEL[property.tipo]}</span>
+                  </div>
+                </button>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <button
                     type="button"

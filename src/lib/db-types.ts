@@ -27,6 +27,8 @@ export interface DbProperty {
   nome: string;
   endereco: string;
   tipo: PropertyTipoDb;
+  /** URL pública da foto do imóvel (bucket `imoveis`). Nullable. */
+  foto_url: string | null;
   created_at: string;
 }
 

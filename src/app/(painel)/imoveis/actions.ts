@@ -4,8 +4,39 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireUser } from "@/lib/auth";
-import { createServerClient } from "@/lib/supabase/server";
+import {
+  createServerClient,
+  createServiceClient,
+} from "@/lib/supabase/server";
 import type { PropertyTipoDb } from "@/lib/db-types";
+
+const FOTO_BUCKET = "imoveis";
+const FOTO_MAX_BYTES = 8 * 1024 * 1024; // 8 MB
+
+/**
+ * Sobe a foto do imóvel para o Storage (service role → ignora RLS) e devolve a
+ * URL pública. `null` quando não há arquivo ou o upload falha — a foto é
+ * opcional e nunca deve derrubar o cadastro.
+ */
+async function uploadFotoImovel(
+  formData: FormData,
+  ownerId: string,
+): Promise<string | null> {
+  const file = formData.get("foto");
+  if (!(file instanceof File) || file.size === 0) return null;
+  if (!file.type.startsWith("image/") || file.size > FOTO_MAX_BYTES) return null;
+
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const path = `${ownerId}/${crypto.randomUUID()}.${ext}`;
+
+  const supabase = createServiceClient();
+  const { error } = await supabase.storage
+    .from(FOTO_BUCKET)
+    .upload(path, file, { contentType: file.type, upsert: false });
+
+  if (error) return null;
+  return supabase.storage.from(FOTO_BUCKET).getPublicUrl(path).data.publicUrl;
+}
 
 /**
  * Server Actions do CRUD de imóveis (properties).
@@ -74,12 +105,15 @@ export async function criarImovel(
     return { error: parsed.error };
   }
 
+  const fotoUrl = await uploadFotoImovel(formData, user.id);
+
   const supabase = await createServerClient();
   const { error } = await supabase.from("properties").insert({
     owner_id: user.id,
     nome: parsed.data.nome,
     endereco: parsed.data.endereco,
     tipo: parsed.data.tipo,
+    foto_url: fotoUrl,
   });
 
   if (error) {
@@ -98,7 +132,7 @@ export async function editarImovel(
   _prevState: PropertyFormState,
   formData: FormData,
 ): Promise<PropertyFormState> {
-  await requireUser();
+  const user = await requireUser();
 
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) {
@@ -110,14 +144,24 @@ export async function editarImovel(
     return { error: parsed.error };
   }
 
+  // Só troca a foto quando um novo arquivo é enviado; senão mantém a atual.
+  const fotoUrl = await uploadFotoImovel(formData, user.id);
+  const patch: {
+    nome: string;
+    endereco: string;
+    tipo: PropertyTipoDb;
+    foto_url?: string;
+  } = {
+    nome: parsed.data.nome,
+    endereco: parsed.data.endereco,
+    tipo: parsed.data.tipo,
+  };
+  if (fotoUrl) patch.foto_url = fotoUrl;
+
   const supabase = await createServerClient();
   const { error } = await supabase
     .from("properties")
-    .update({
-      nome: parsed.data.nome,
-      endereco: parsed.data.endereco,
-      tipo: parsed.data.tipo,
-    })
+    .update(patch)
     .eq("id", id.data);
 
   if (error) {

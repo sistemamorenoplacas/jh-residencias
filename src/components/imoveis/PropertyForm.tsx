@@ -40,6 +40,7 @@ export function PropertyForm({ mode, property, onClose }: PropertyFormProps) {
   const nomeId = useId();
   const enderecoId = useId();
   const tipoId = useId();
+  const fotoId = useId();
 
   // Fecha o modal quando a action conclui sem erro. `state` é uma nova
   // referência a cada submit; checamos a ausência de erro pós-pending.
@@ -155,6 +156,32 @@ export function PropertyForm({ mode, property, onClose }: PropertyFormProps) {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label htmlFor={fotoId} className="label">
+                Foto do imóvel <span className="text-faint">(opcional)</span>
+              </label>
+              {property?.foto_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={property.foto_url}
+                  alt={property.nome}
+                  className="mb-2 h-32 w-full rounded-xl object-cover"
+                />
+              ) : null}
+              <input
+                id={fotoId}
+                name="foto"
+                type="file"
+                accept="image/*"
+                className="field"
+              />
+              {mode === "editar" ? (
+                <p className="mt-1 text-xs text-faint">
+                  Deixe em branco para manter a foto atual.
+                </p>
+              ) : null}
             </div>
 
             {state.error ? (
