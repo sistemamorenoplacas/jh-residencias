@@ -61,6 +61,9 @@ export interface DadosPagamentoCharge {
   mpPreferenceId?: string | null;
   pixCopiaCola?: string | null;
   linkPagamento?: string | null;
+  boletoUrl?: string | null;
+  boletoLinhaDigitavel?: string | null;
+  boletoMpPaymentId?: string | null;
 }
 
 /** Erro de domínio do repositório, com a mensagem original do Postgres. */
@@ -174,6 +177,15 @@ export async function atualizarDadosPagamentoCharge(
   }
   if (dados.linkPagamento !== undefined) {
     patch.link_pagamento = dados.linkPagamento;
+  }
+  if (dados.boletoUrl !== undefined) {
+    patch.boleto_url = dados.boletoUrl;
+  }
+  if (dados.boletoLinhaDigitavel !== undefined) {
+    patch.boleto_linha_digitavel = dados.boletoLinhaDigitavel;
+  }
+  if (dados.boletoMpPaymentId !== undefined) {
+    patch.boleto_mp_payment_id = dados.boletoMpPaymentId;
   }
 
   const supabase = createServiceClient();

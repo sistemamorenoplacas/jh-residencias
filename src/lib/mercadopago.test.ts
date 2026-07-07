@@ -6,6 +6,7 @@ import {
   mapStatusMpToCharge,
   validarAssinaturaWebhook,
   vencimentoParaExpiration,
+  extrairCobrancaBoleto,
 } from "@/lib/mercadopago";
 
 /**
@@ -197,5 +198,36 @@ describe("vencimentoParaExpiration", () => {
     const agora = new Date("2026-07-06T12:00:00-03:00");
     const exp = vencimentoParaExpiration("2026-07-01", agora);
     expect(exp).toMatch(/^\d{4}-\d{2}-\d{2}T23:59:59\.000-03:00$/);
+  });
+});
+
+describe("extrairCobrancaBoleto", () => {
+  it("extrai id, url do boleto e linha digitável", () => {
+    const payload = {
+      id: 987654321,
+      transaction_details: {
+        external_resource_url: "https://mp.com/boleto.pdf",
+      },
+      barcode: { content: "23793380296000000000" },
+    };
+
+    const r = extrairCobrancaBoleto(payload);
+
+    expect(r.mpPaymentId).toBe("987654321");
+    expect(r.boletoUrl).toBe("https://mp.com/boleto.pdf");
+    expect(r.linhaDigitavel).toBe("23793380296000000000");
+  });
+
+  it("tolera ausência de url/linha (retorna null nesses campos)", () => {
+    const r = extrairCobrancaBoleto({ id: "abc" });
+    expect(r.mpPaymentId).toBe("abc");
+    expect(r.boletoUrl).toBeNull();
+    expect(r.linhaDigitavel).toBeNull();
+  });
+
+  it("lança quando o payload não tem id de pagamento", () => {
+    expect(() => extrairCobrancaBoleto({ status: "pending" })).toThrow(
+      /sem `id`/,
+    );
   });
 });

@@ -214,6 +214,98 @@ export async function criarCobrancaPix(
   return extrairCobrancaPix(payload);
 }
 
+/** Resultado de `criarCobrancaBoleto`. */
+export interface CobrancaBoletoResult {
+  /** `id` do pagamento boleto no MP (= `charge.boleto_mp_payment_id`). */
+  mpPaymentId: string;
+  /** URL do boleto (HTML/PDF) — `transaction_details.external_resource_url`. */
+  boletoUrl: string | null;
+  /** Linha digitável / código de barras — `barcode.content`. */
+  linhaDigitavel: string | null;
+}
+
+/** Dados do pagador exigidos pelo boleto (todos obrigatórios no MP). */
+export interface PayerBoleto {
+  email: string;
+  firstName: string;
+  lastName: string;
+  /** CPF só com dígitos. */
+  cpf: string;
+  /** CEP só com dígitos. */
+  zipCode: string;
+  streetName: string;
+  streetNumber: string;
+  neighborhood: string;
+  city: string;
+  /** UF (2 letras). */
+  federalUnit: string;
+}
+
+interface CriarCobrancaBoletoInput {
+  /** `charge.id` — vira `external_reference` no MP. */
+  chargeId: string;
+  valorCentavos: number;
+  /** Vencimento `YYYY-MM-DD` — vira `date_of_expiration`. */
+  vencimento: string;
+  payer: PayerBoleto;
+}
+
+/**
+ * Cria uma cobrança por boleto no Mercado Pago.
+ *
+ * `POST /v1/payments` com `payment_method_id: "bolbradesco"`. Diferente do Pix,
+ * o boleto exige `payer` completo (nome, CPF e endereço) — o MP recusa sem eles.
+ * `external_reference` carrega o `chargeId` (o webhook reconcilia por ele, igual
+ * ao Pix). `Idempotency-Key` `boleto-<chargeId>` evita boletos duplicados.
+ */
+export async function criarCobrancaBoleto(
+  input: CriarCobrancaBoletoInput,
+): Promise<CobrancaBoletoResult> {
+  const { chargeId, valorCentavos, vencimento, payer } = input;
+  const { MP_ACCESS_TOKEN } = serverEnv();
+
+  const body = {
+    transaction_amount: centavosParaReais(valorCentavos),
+    payment_method_id: "bolbradesco",
+    external_reference: chargeId,
+    date_of_expiration: vencimentoParaExpiration(vencimento, new Date()),
+    description: `Aluguel — cobrança ${chargeId}`,
+    payer: {
+      email: payer.email,
+      first_name: payer.firstName,
+      last_name: payer.lastName,
+      identification: { type: "CPF", number: payer.cpf },
+      address: {
+        zip_code: payer.zipCode,
+        street_name: payer.streetName,
+        street_number: payer.streetNumber,
+        neighborhood: payer.neighborhood,
+        city: payer.city,
+        federal_unit: payer.federalUnit,
+      },
+    },
+  };
+
+  const res = await fetch(`${MP_API_BASE}/v1/payments`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
+      "Content-Type": "application/json",
+      "X-Idempotency-Key": `boleto-${chargeId}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const payload: unknown = await lerJson(res);
+  if (!res.ok) {
+    throw new Error(
+      `Mercado Pago — falha ao criar boleto (HTTP ${res.status}): ${descreverErroMp(payload)}`,
+    );
+  }
+
+  return extrairCobrancaBoleto(payload);
+}
+
 /**
  * Consulta um pagamento no MP por `id`.
  *
@@ -357,6 +449,32 @@ function extrairTransactionData(
   if (!isRecord(poi)) return null;
   const data = poi.transaction_data;
   return isRecord(data) ? data : null;
+}
+
+/**
+ * Extrai id, URL e linha digitável do payload de um pagamento boleto do MP.
+ * PURA — exportada para teste sem rede.
+ */
+export function extrairCobrancaBoleto(payload: unknown): CobrancaBoletoResult {
+  if (!isRecord(payload)) {
+    throw new Error("Mercado Pago — resposta de boleto inesperada");
+  }
+
+  const mpPaymentId = stringDe(payload.id);
+  if (!mpPaymentId) {
+    throw new Error("Mercado Pago — resposta de boleto sem `id` de pagamento");
+  }
+
+  const transactionDetails = isRecord(payload.transaction_details)
+    ? payload.transaction_details
+    : null;
+  const barcode = isRecord(payload.barcode) ? payload.barcode : null;
+
+  return {
+    mpPaymentId,
+    boletoUrl: stringDe(transactionDetails?.external_resource_url),
+    linhaDigitavel: stringDe(barcode?.content),
+  };
 }
 
 function extrairConsultaPagamento(

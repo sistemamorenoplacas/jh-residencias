@@ -74,6 +74,10 @@ export interface DbCharge {
   mp_preference_id: string | null;
   pix_copia_cola: string | null;
   link_pagamento: string | null;
+  /** Boleto (Mercado Pago) — pagamento próprio, distinto do Pix. Nullable. */
+  boleto_url: string | null;
+  boleto_linha_digitavel: string | null;
+  boleto_mp_payment_id: string | null;
   pago_em: string | null;
   created_at: string;
 }

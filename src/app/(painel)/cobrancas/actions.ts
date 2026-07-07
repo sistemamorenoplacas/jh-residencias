@@ -29,7 +29,11 @@ import {
   ChargesRepoError,
   PAYER_EMAIL_FALLBACK,
 } from "@/lib/charges-repo";
-import { criarCobrancaPix } from "@/lib/mercadopago";
+import {
+  criarCobrancaPix,
+  criarCobrancaBoleto,
+  type PayerBoleto,
+} from "@/lib/mercadopago";
 import { cobrancaAluguel } from "@/lib/whatsapp";
 import { formatAmount } from "@/lib/money";
 import { formatCompetencia, formatData } from "@/lib/dates";
@@ -157,6 +161,88 @@ function emailPagador(tenant: DbTenant): string {
   return tenant.email ?? PAYER_EMAIL_FALLBACK;
 }
 
+/** Remove tudo que não for dígito (CPF/CEP chegam mascarados da UI). */
+function soDigitos(valor: string | null | undefined): string {
+  return (valor ?? "").replace(/\D/g, "");
+}
+
+/**
+ * Monta o `payer` do boleto a partir do tenant, ou `null` se faltar algum dado
+ * obrigatório do MP (CPF de 11 dígitos, CEP de 8, endereço completo, UF).
+ */
+function dadosBoletoDoTenant(tenant: DbTenant): PayerBoleto | null {
+  const cpf = soDigitos(tenant.cpf);
+  const zipCode = soDigitos(tenant.cep);
+  const partesNome = tenant.nome.trim().split(/\s+/);
+  const firstName = partesNome[0] ?? "";
+  const lastName =
+    partesNome.length > 1 ? partesNome.slice(1).join(" ") : firstName;
+  const streetName = (tenant.logradouro ?? "").trim();
+  const streetNumber = (tenant.numero ?? "").trim();
+  const neighborhood = (tenant.bairro ?? "").trim();
+  const city = (tenant.cidade ?? "").trim();
+  const federalUnit = (tenant.uf ?? "").trim().toUpperCase();
+
+  const completo =
+    cpf.length === 11 &&
+    zipCode.length === 8 &&
+    firstName.length > 0 &&
+    streetName.length > 0 &&
+    streetNumber.length > 0 &&
+    neighborhood.length > 0 &&
+    city.length > 0 &&
+    federalUnit.length === 2;
+
+  if (!completo) return null;
+
+  return {
+    email: emailPagador(tenant),
+    firstName,
+    lastName,
+    cpf,
+    zipCode,
+    streetName,
+    streetNumber,
+    neighborhood,
+    city,
+    federalUnit,
+  };
+}
+
+/**
+ * Gera o boleto no MP (quando o inquilino tem CPF + endereço completos) e anexa
+ * à charge. Best-effort e DELIBERADAMENTE tolerante: o boleto é complementar ao
+ * Pix; se faltar dado ou o MP falhar, seguimos com o Pix (o inquilino sempre tem
+ * como pagar) em vez de derrubar a cobrança inteira. Retorna a charge — já
+ * atualizada quando o boleto é emitido.
+ */
+async function gerarBoletoEAnexar(
+  charge: DbCharge,
+  tenant: DbTenant,
+): Promise<DbCharge> {
+  if (charge.boleto_url) return charge;
+
+  const payer = dadosBoletoDoTenant(tenant);
+  if (!payer) return charge;
+
+  try {
+    const boleto = await criarCobrancaBoleto({
+      chargeId: charge.id,
+      valorCentavos: charge.valor_centavos,
+      vencimento: charge.vencimento,
+      payer,
+    });
+
+    return atualizarDadosPagamentoCharge(charge.id, {
+      boletoUrl: boleto.boletoUrl,
+      boletoLinhaDigitavel: boleto.linhaDigitavel,
+      boletoMpPaymentId: boleto.mpPaymentId,
+    });
+  } catch {
+    return charge;
+  }
+}
+
 /**
  * Gera uma cobrança avulsa para um contrato numa competência (`YYYY-MM-01`).
  * Idempotente quanto à charge; gera Pix e notifica o inquilino por WhatsApp.
@@ -194,10 +280,12 @@ export async function gerarCobrancaAvulsa(
       ? charge
       : await gerarPixEAnexar(charge, emailPagador(tenant));
 
-    await notificarCobranca(comPix, tenant);
+    const comBoleto = await gerarBoletoEAnexar(comPix, tenant);
+
+    await notificarCobranca(comBoleto, tenant);
 
     revalidatePath("/cobrancas");
-    revalidatePath(`/cobrancas/${comPix.id}`);
+    revalidatePath(`/cobrancas/${comBoleto.id}`);
     return { ok: true, error: null };
   } catch (error: unknown) {
     return { ok: false, error: mensagemErro(error) };
@@ -259,7 +347,9 @@ export async function reenviarCobranca(
       ? charge
       : await gerarPixEAnexar(charge, emailPagador(tenant));
 
-    await notificarCobranca(comPix, tenant);
+    const comBoleto = await gerarBoletoEAnexar(comPix, tenant);
+
+    await notificarCobranca(comBoleto, tenant);
 
     revalidatePath("/cobrancas");
     revalidatePath(`/cobrancas/${charge.id}`);
