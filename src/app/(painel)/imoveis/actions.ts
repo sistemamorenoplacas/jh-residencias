@@ -13,18 +13,31 @@ import type { PropertyTipoDb } from "@/lib/db-types";
 const FOTO_BUCKET = "imoveis";
 const FOTO_MAX_BYTES = 8 * 1024 * 1024; // 8 MB
 
+/** Resultado do upload: `url` quando enviou, `erro` quando o arquivo é inválido. */
+interface UploadFotoResult {
+  url: string | null;
+  erro: string | null;
+}
+
 /**
- * Sobe a foto do imóvel para o Storage (service role → ignora RLS) e devolve a
- * URL pública. `null` quando não há arquivo ou o upload falha — a foto é
- * opcional e nunca deve derrubar o cadastro.
+ * Sobe a foto do imóvel para o Storage (service role → ignora RLS). Sem arquivo
+ * → `{ url: null, erro: null }` (foto é opcional). Arquivo inválido/grande →
+ * devolve `erro` para o form avisar o usuário, em vez de falhar em silêncio.
  */
 async function uploadFotoImovel(
   formData: FormData,
   ownerId: string,
-): Promise<string | null> {
+): Promise<UploadFotoResult> {
   const file = formData.get("foto");
-  if (!(file instanceof File) || file.size === 0) return null;
-  if (!file.type.startsWith("image/") || file.size > FOTO_MAX_BYTES) return null;
+  if (!(file instanceof File) || file.size === 0) {
+    return { url: null, erro: null };
+  }
+  if (!file.type.startsWith("image/")) {
+    return { url: null, erro: "O arquivo enviado não é uma imagem." };
+  }
+  if (file.size > FOTO_MAX_BYTES) {
+    return { url: null, erro: "A foto é muito grande (máx. 8 MB)." };
+  }
 
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
   const path = `${ownerId}/${crypto.randomUUID()}.${ext}`;
@@ -34,8 +47,25 @@ async function uploadFotoImovel(
     .from(FOTO_BUCKET)
     .upload(path, file, { contentType: file.type, upsert: false });
 
-  if (error) return null;
-  return supabase.storage.from(FOTO_BUCKET).getPublicUrl(path).data.publicUrl;
+  if (error) {
+    return { url: null, erro: "Não foi possível enviar a foto. Tente de novo." };
+  }
+  return {
+    url: supabase.storage.from(FOTO_BUCKET).getPublicUrl(path).data.publicUrl,
+    erro: null,
+  };
+}
+
+/** Remove do Storage a foto antiga ao trocar por uma nova (best-effort). */
+async function removerFotoAntiga(fotoUrl: string | null): Promise<void> {
+  if (!fotoUrl) return;
+  const marcador = `/${FOTO_BUCKET}/`;
+  const idx = fotoUrl.indexOf(marcador);
+  if (idx === -1) return;
+  const path = fotoUrl.slice(idx + marcador.length);
+  if (!path) return;
+  const supabase = createServiceClient();
+  await supabase.storage.from(FOTO_BUCKET).remove([path]);
 }
 
 /**
@@ -105,7 +135,10 @@ export async function criarImovel(
     return { error: parsed.error };
   }
 
-  const fotoUrl = await uploadFotoImovel(formData, user.id);
+  const foto = await uploadFotoImovel(formData, user.id);
+  if (foto.erro) {
+    return { error: foto.erro };
+  }
 
   const supabase = await createServerClient();
   const { error } = await supabase.from("properties").insert({
@@ -113,7 +146,7 @@ export async function criarImovel(
     nome: parsed.data.nome,
     endereco: parsed.data.endereco,
     tipo: parsed.data.tipo,
-    foto_url: fotoUrl,
+    foto_url: foto.url,
   });
 
   if (error) {
@@ -145,7 +178,11 @@ export async function editarImovel(
   }
 
   // Só troca a foto quando um novo arquivo é enviado; senão mantém a atual.
-  const fotoUrl = await uploadFotoImovel(formData, user.id);
+  const foto = await uploadFotoImovel(formData, user.id);
+  if (foto.erro) {
+    return { error: foto.erro };
+  }
+
   const patch: {
     nome: string;
     endereco: string;
@@ -156,9 +193,21 @@ export async function editarImovel(
     endereco: parsed.data.endereco,
     tipo: parsed.data.tipo,
   };
-  if (fotoUrl) patch.foto_url = fotoUrl;
+  if (foto.url) patch.foto_url = foto.url;
 
   const supabase = await createServerClient();
+
+  // Guarda a foto atual para remover do Storage se houver troca.
+  let fotoAntiga: string | null = null;
+  if (foto.url) {
+    const { data } = await supabase
+      .from("properties")
+      .select("foto_url")
+      .eq("id", id.data)
+      .single();
+    fotoAntiga = (data as { foto_url: string | null } | null)?.foto_url ?? null;
+  }
+
   const { error } = await supabase
     .from("properties")
     .update(patch)
@@ -166,6 +215,10 @@ export async function editarImovel(
 
   if (error) {
     return { error: "Não foi possível atualizar o imóvel. Tente novamente." };
+  }
+
+  if (foto.url && fotoAntiga && fotoAntiga !== foto.url) {
+    await removerFotoAntiga(fotoAntiga);
   }
 
   revalidatePath("/imoveis");
@@ -187,7 +240,14 @@ export async function excluirImovel(formData: FormData): Promise<void> {
   }
 
   const supabase = await createServerClient();
+
+  // `leases.property_id` é ON DELETE RESTRICT: os contratos do imóvel precisam
+  // sair antes (as cobranças caem por CASCADE). Só então o imóvel é removido.
+  // Tudo escopado ao dono pelo RLS.
+  await supabase.from("leases").delete().eq("property_id", id.data);
   await supabase.from("properties").delete().eq("id", id.data);
 
   revalidatePath("/imoveis");
+  revalidatePath("/contratos");
+  revalidatePath("/cobrancas");
 }

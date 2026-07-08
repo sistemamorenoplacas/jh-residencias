@@ -27,15 +27,18 @@ import {
 import {
   inserirChargesIdempotente,
   atualizarDadosPagamentoCharge,
+  confirmarPagamento,
   ChargesRepoError,
   PAYER_EMAIL_FALLBACK,
 } from "@/lib/charges-repo";
 import {
   criarCobrancaPix,
   criarCobrancaBoleto,
+  consultarPagamento,
+  mapStatusMpToCharge,
   type PayerBoleto,
 } from "@/lib/mercadopago";
-import { cobrancaAluguel } from "@/lib/whatsapp";
+import { cobrancaAluguel, pagamentoConfirmado } from "@/lib/whatsapp";
 import { formatAmount } from "@/lib/money";
 import { formatCompetencia, formatData } from "@/lib/dates";
 
@@ -494,4 +497,86 @@ export async function gerarCobrancasDoMes(): Promise<GerarLoteState> {
   if (avisos > 0) partes.push(`${avisos} com aviso`);
 
   return { ok: true, message: `${partes.join(" · ")}.` };
+}
+
+/** Dispara o template `pagamento_confirmado` e registra em whatsapp_messages. */
+async function notificarPagamentoConfirmado(
+  charge: DbCharge,
+  tenant: DbTenant,
+): Promise<void> {
+  const { wamid } = await pagamentoConfirmado({
+    to: tenant.telefone,
+    nome: tenant.nome,
+    competencia: formatCompetencia(charge.competencia),
+    valor: formatAmount(charge.valor_centavos),
+  });
+
+  const supabase = createServiceClient();
+  await supabase.from("whatsapp_messages").insert({
+    owner_id: charge.owner_id,
+    charge_id: charge.id,
+    tenant_id: tenant.id,
+    template: "pagamento_confirmado",
+    wamid,
+    status: "enviado",
+  });
+}
+
+/**
+ * Consulta o Mercado Pago pelo `mp_payment_id` da cobrança e, se estiver
+ * aprovado, baixa a cobrança e envia a confirmação — rede de segurança para
+ * quando o webhook não chega (config do painel, redirect, etc.).
+ */
+export async function verificarPagamentoCharge(
+  chargeId: string,
+): Promise<CobrancaActionState> {
+  const user = await requireUser();
+  if (!chargeId) {
+    return { ok: false, error: "Cobrança inválida." };
+  }
+
+  try {
+    const { charge, tenant } = await carregarChargeComContexto(
+      user.id,
+      chargeId,
+    );
+
+    if (charge.status === "pago") {
+      return { ok: true, error: null };
+    }
+    if (charge.status === "cancelado") {
+      return { ok: false, error: "Cobrança cancelada." };
+    }
+    if (!charge.mp_payment_id) {
+      return { ok: false, error: "Sem pagamento associado para verificar." };
+    }
+
+    const consulta = await consultarPagamento(charge.mp_payment_id);
+    if (mapStatusMpToCharge(consulta.status) !== "pago") {
+      return {
+        ok: false,
+        error: `Ainda não confirmado no Mercado Pago (status: ${consulta.status}).`,
+      };
+    }
+
+    const { charge: paga } = await confirmarPagamento(chargeId, {
+      mpPaymentId: consulta.mpPaymentId,
+      status: consulta.status,
+      valorCentavos: consulta.valorCentavos,
+      metodo: consulta.metodo,
+      raw: consulta.raw,
+    });
+
+    try {
+      await notificarPagamentoConfirmado(paga, tenant);
+    } catch {
+      // A baixa já foi registrada; falha ao notificar não deve reverter.
+    }
+
+    revalidatePath("/cobrancas");
+    revalidatePath(`/cobrancas/${chargeId}`);
+    return { ok: true, error: null };
+  } catch (error: unknown) {
+    return { ok: false, error: mensagemErro(error) };
+  }
 }

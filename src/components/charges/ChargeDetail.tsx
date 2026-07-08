@@ -8,7 +8,12 @@ import { formatBRL } from "@/lib/money";
 import { formatCompetencia, formatData } from "@/lib/dates";
 import type { ChargeStatus } from "@/lib/types";
 import type { ValorDevido } from "@/lib/charges";
-import { reenviarCobranca, cancelarCobranca, marcarPagoManualmente } from "@/app/(painel)/cobrancas/actions";
+import {
+  reenviarCobranca,
+  cancelarCobranca,
+  marcarPagoManualmente,
+  verificarPagamentoCharge,
+} from "@/app/(painel)/cobrancas/actions";
 
 /** Dados desnormalizados de uma cobrança para a tela de detalhe. */
 export interface ChargeDetailData {
@@ -256,6 +261,18 @@ export function ChargeDetail({ charge }: ChargeDetailProps) {
                 disabled={pending}
               >
                 {pending ? "Processando..." : "Reenviar cobrança"}
+              </PrimaryButton>
+              <PrimaryButton
+                variant="ghost"
+                onClick={() =>
+                  executar(
+                    () => verificarPagamentoCharge(charge.id),
+                    "Pagamento confirmado pelo Mercado Pago.",
+                  )
+                }
+                disabled={pending}
+              >
+                Verificar pagamento
               </PrimaryButton>
               <PrimaryButton
                 variant="ghost"

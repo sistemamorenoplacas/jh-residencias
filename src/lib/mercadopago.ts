@@ -182,7 +182,7 @@ export async function criarCobrancaPix(
   input: CriarCobrancaPixInput,
 ): Promise<CobrancaPixResult> {
   const { chargeId, valorCentavos, vencimento, payerEmail } = input;
-  const { MP_ACCESS_TOKEN } = serverEnv();
+  const { MP_ACCESS_TOKEN, APP_BASE_URL } = serverEnv();
 
   const body = {
     transaction_amount: centavosParaReais(valorCentavos),
@@ -191,6 +191,8 @@ export async function criarCobrancaPix(
     date_of_expiration: vencimentoParaExpiration(vencimento, new Date()),
     payer: { email: payerEmail },
     description: `Aluguel — cobrança ${chargeId}`,
+    // Notifica o webhook por pagamento (não depende só da config do painel MP).
+    notification_url: `${APP_BASE_URL}/api/webhooks/mercadopago`,
   };
 
   const res = await fetch(`${MP_API_BASE}/v1/payments`, {
@@ -262,7 +264,7 @@ export async function criarCobrancaBoleto(
   input: CriarCobrancaBoletoInput,
 ): Promise<CobrancaBoletoResult> {
   const { chargeId, valorCentavos, vencimento, payer } = input;
-  const { MP_ACCESS_TOKEN } = serverEnv();
+  const { MP_ACCESS_TOKEN, APP_BASE_URL } = serverEnv();
 
   const body = {
     transaction_amount: centavosParaReais(valorCentavos),
@@ -270,6 +272,7 @@ export async function criarCobrancaBoleto(
     external_reference: chargeId,
     date_of_expiration: vencimentoParaExpiration(vencimento, new Date()),
     description: `Aluguel — cobrança ${chargeId}`,
+    notification_url: `${APP_BASE_URL}/api/webhooks/mercadopago`,
     payer: {
       email: payer.email,
       first_name: payer.firstName,

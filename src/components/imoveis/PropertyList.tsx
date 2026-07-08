@@ -229,8 +229,9 @@ export function PropertyList({ properties }: PropertyListProps) {
       {confirmTarget ? (
         <ConfirmModal
           title="Excluir imóvel"
-          message={`Tem certeza que deseja excluir "${confirmTarget.nome}"? Esta ação não pode ser desfeita.`}
+          message={`Excluir "${confirmTarget.nome}" também remove os contratos e cobranças vinculados a ele. Esta ação não pode ser desfeita.`}
           confirmLabel="Excluir"
+          confirmPhrase="excluir imovel"
           onConfirm={async () => {
             const id = confirmTarget.id;
             setConfirmTarget(null);
