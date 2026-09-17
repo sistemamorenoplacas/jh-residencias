@@ -1205,14 +1205,15 @@
     color: #fff;
   }
 
-  /* Cartões */
+  /* Cartões — ritmo vertical de 18px entre blocos, 12px entre os dois stats */
   .estate-overview {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 18px;
+    margin-top: 18px;
   }
   .estate-stat-stack {
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 12px;
   }
   .estate-card {
     padding: 18px;
@@ -1303,7 +1304,8 @@
   /* Cobranças: a tabela vira uma lista de cartões */
   .estate-bottom-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 18px;
+    margin-top: 18px;
   }
   .estate-filters {
     flex-direction: column;
