@@ -41,7 +41,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <main
-      className="relative grid min-h-dvh place-items-center overflow-hidden px-4 py-10"
+      className="relative grid min-h-dvh place-items-center overflow-hidden px-4 pb-10 pt-[calc(2.5rem+env(safe-area-inset-top,0px))]"
       style={{ background: "linear-gradient(160deg,#041a3d 0%,#052351 52%,#0e3a75 100%)" }}
     >
       {/* Grade de pontos */}

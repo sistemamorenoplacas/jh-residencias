@@ -28,10 +28,20 @@ export const metadata: Metadata = {
   description: "Cobrança de aluguel — painel administrativo",
   // Ícones vêm da convenção de arquivo do Next: src/app/icon.png e
   // src/app/apple-icon.png. Não declarar `icons` aqui evita conflito.
-  appleWebApp: { capable: true, title: "JH Residências", statusBarStyle: "default" },
+  // `black-translucent`: no app instalado a página corre por baixo da status
+  // bar (texto branco) — o topo navy do celular preenche essa área via
+  // env(safe-area-inset-top) em dashboard.css e na tela de login.
+  appleWebApp: { capable: true, title: "JH Residências", statusBarStyle: "black-translucent" },
 };
 
-export const viewport: Viewport = { themeColor: "#052351" };
+export const viewport: Viewport = {
+  themeColor: "#052351",
+  width: "device-width",
+  initialScale: 1,
+  // Sem isto o Safari reserva uma faixa cinza no topo em vez de deixar a
+  // página ocupar a tela toda (notch/Dynamic Island e status bar).
+  viewportFit: "cover",
+};
 
 export default function RootLayout({
   children,

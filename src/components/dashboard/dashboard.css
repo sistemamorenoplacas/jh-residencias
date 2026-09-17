@@ -1102,7 +1102,8 @@
   /* Topo navy contínuo: header + hero sangram até as bordas. */
   .estate-header {
     margin: 0 -14px;
-    padding: 12px 14px 4px;
+    /* Sob a status bar (viewport-fit=cover / app instalado) o navy continua. */
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 4px;
     background: #061a3a;
   }
   .estate-only-desktop {
