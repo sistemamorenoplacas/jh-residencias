@@ -6,6 +6,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 
 import { signOut } from "@/app/login/actions";
+import { abrirInstalacaoPwa, useAppInstalado } from "@/components/pwa/usePwaInstall";
 import { NAV, isActive } from "./nav";
 
 const ICON = "size-[18px] shrink-0";
@@ -23,6 +24,11 @@ const IconPerfil = (
     <circle cx="12" cy="8" r="3.5" /><path d="M4.5 20c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5" />
   </svg>
 );
+const IconInstall = (
+  <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="5" y="2" width="14" height="20" rx="3" /><path d="M12 7v7M9 11l3 3 3-3" />
+  </svg>
+);
 const IconLogout = (
   <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
@@ -32,6 +38,8 @@ const IconLogout = (
 export function MobileNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // `false` no servidor; no cliente reflete o modo standalone (sem setState em effect).
+  const instalado = useAppInstalado();
 
   const primaryItems = PRIMARY.map((h) => NAV.find((n) => n.href === h)).filter(
     (n): n is (typeof NAV)[number] => Boolean(n),
@@ -117,6 +125,20 @@ export function MobileNav() {
                     <span className="text-muted">{IconPerfil}</span>
                     Meu perfil
                   </Link>
+
+                  {!instalado ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpen(false);
+                        abrirInstalacaoPwa();
+                      }}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-ink hover:bg-canvas"
+                    >
+                      <span className="text-muted">{IconInstall}</span>
+                      Instalar como app
+                    </button>
+                  ) : null}
 
                   <div className="my-2 h-px bg-line" />
 

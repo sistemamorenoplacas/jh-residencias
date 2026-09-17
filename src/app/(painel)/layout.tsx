@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { requireUser } from "@/lib/auth";
 import { SessionGuard } from "@/components/shell/SessionGuard";
+import { InstallAppOnboarding } from "@/components/pwa/InstallAppOnboarding";
 
 /**
  * Layout do grupo (painel).
@@ -25,6 +26,8 @@ export default async function PainelLayout({
     <>
       <SessionGuard />
       {children}
+      {/* Pop-up "instale como app" no 1º acesso pelo celular (e via menu Mais). */}
+      <InstallAppOnboarding />
     </>
   );
 }
