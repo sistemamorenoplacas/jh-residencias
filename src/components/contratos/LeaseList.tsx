@@ -24,6 +24,7 @@ interface LeaseListProps {
   leases: readonly LeaseListItem[];
   properties: readonly LeaseFormOption[];
   tenants: readonly LeaseFormOption[];
+  taxasPadrao?: { multaPercent: number; jurosMesPercent: number };
 }
 
 function AtivoBadge({ ativo }: { ativo: boolean }) {
@@ -74,7 +75,7 @@ function vencimentoLabel(dia: number): string {
   return `Vence dia ${dia}`;
 }
 
-export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
+export function LeaseList({ leases, properties, tenants, taxasPadrao }: LeaseListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [busca, setBusca] = useState("");
@@ -158,6 +159,7 @@ export function LeaseList({ leases, properties, tenants }: LeaseListProps) {
         <LeaseForm
           properties={properties}
           tenants={tenants}
+          taxasPadrao={taxasPadrao}
           onClose={() => setIsCreating(false)}
         />
       ) : null}

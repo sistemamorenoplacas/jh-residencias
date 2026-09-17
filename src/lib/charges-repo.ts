@@ -239,17 +239,21 @@ interface ChargeLembreteRow extends DbCharge {
 
 /**
  * Busca charges em aberto (`pendente`/`vencido`) cujo vencimento cai em um dos
- * marcos de lembrete relativos a `hoje` (D-3, D0, D+1, D+5), já com os dados do
- * inquilino e do contrato necessários para montar a mensagem.
+ * `marcos` de lembrete relativos a `hoje` (padrão D-3, D0, D+1, D+5), já com
+ * os dados do inquilino e do contrato necessários para montar a mensagem.
+ * `marcoDias` de cada resultado diz em qual marco a charge caiu.
  */
 export async function buscarChargesParaLembrete(
   hoje: Date,
+  marcos: readonly number[] = MARCOS_LEMBRETE_DIAS,
 ): Promise<ChargeLembrete[]> {
   const supabase = createServiceClient();
   const hojeStr = hojeIso(hoje);
+  if (marcos.length === 0) return [];
 
   // Datas-alvo: vencimento = hoje + (-marco). D-3 => vence em hoje+3, etc.
-  const vencimentosAlvo = MARCOS_LEMBRETE_DIAS.map((marco) =>
+  // `marcos` é a união dos marcos de todos os donos; o cron filtra por dono.
+  const vencimentosAlvo = [...new Set(marcos)].map((marco) =>
     deslocarDataIso(hojeStr, -marco),
   );
 

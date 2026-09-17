@@ -8,6 +8,7 @@ import { formatCompetencia, formatData } from "@/lib/dates";
 import type { ChargeStatusDb } from "@/lib/db-types";
 import { getSettings } from "@/lib/settings";
 import { VertixCredit } from "@/components/ui/VertixCredit";
+import { RegistrarAbertura } from "@/components/pagar/RegistrarAbertura";
 import { CopyPixButton } from "./CopyPixButton";
 
 // Status pode mudar (pago via webhook) — nunca cachear a página.
@@ -96,6 +97,7 @@ export default async function PagarPixPage({
 
   return (
     <main className="relative min-h-dvh overflow-hidden bg-[var(--color-canvas)] px-4 py-8">
+      <RegistrarAbertura chargeId={id} pagina="pix" />
       <Skyline />
       <div className="relative mx-auto w-full max-w-lg">
         {!emAberto && (

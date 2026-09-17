@@ -4,6 +4,7 @@ import type { ChargeRow } from "@/lib/types";
 import { formatAmount } from "@/lib/money";
 import { formatDiaMes } from "@/lib/dates";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { LinkAbertoBadge } from "@/components/ui/LinkAbertoBadge";
 
 function initials(nome: string): string {
   return nome.split(" ").slice(0, 2).map((p) => p[0]).join("").toUpperCase();
@@ -76,7 +77,7 @@ export function ChargesTable({ rows }: ChargesTableProps) {
                   ) : null}
                 </td>
                 <td className="px-5 py-3.5">
-                  <StatusPill status={r.status} diasAtraso={r.diasAtraso} />
+                  <span className="inline-flex flex-wrap items-center gap-1.5"><StatusPill status={r.status} diasAtraso={r.diasAtraso} /><LinkAbertoBadge aberturas={r.linkAberturas} /></span>
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <DetalhesLink id={r.id} />
@@ -99,7 +100,7 @@ export function ChargesTable({ rows }: ChargesTableProps) {
                   <p className="truncate text-xs text-faint">{r.imovel}</p>
                 </div>
               </div>
-              <StatusPill status={r.status} diasAtraso={r.diasAtraso} />
+              <span className="inline-flex flex-wrap items-center gap-1.5"><StatusPill status={r.status} diasAtraso={r.diasAtraso} /><LinkAbertoBadge aberturas={r.linkAberturas} /></span>
             </div>
             <div className="mt-3 flex items-end justify-between border-t border-line pt-3">
               <div>

@@ -9,6 +9,8 @@ export interface ValorParams {
   vencimento: string; // YYYY-MM-DD
   multaPercent: number; // ex.: 2.0
   jurosMesPercent: number; // ex.: 1.0
+  /** Dias após o vencimento sem multa/juros (padrão 0). */
+  carenciaDias?: number;
 }
 
 export interface ValorDevido {
@@ -39,16 +41,20 @@ export function diasAtraso(vencimento: string, hoje: Date): number {
   return dias > 0 ? dias : 0;
 }
 
-/** Valor total devido na data `hoje`, decompondo multa e juros. */
+/**
+ * Valor total devido na data `hoje`, decompondo multa e juros. Dentro da
+ * carência o atraso é contado (`diasAtraso`), mas nada é cobrado a mais.
+ */
 export function valorDevido(p: ValorParams, hoje: Date): ValorDevido {
   const dias = diasAtraso(p.vencimento, hoje);
-  if (dias === 0) {
+  const carencia = Math.max(0, Math.floor(p.carenciaDias ?? 0));
+  if (dias === 0 || dias <= carencia) {
     return {
       baseCentavos: p.baseCentavos,
       multaCentavos: 0,
       jurosCentavos: 0,
       totalCentavos: p.baseCentavos,
-      diasAtraso: 0,
+      diasAtraso: dias,
     };
   }
   const multa = roundHalfUp((p.baseCentavos * p.multaPercent) / 100);

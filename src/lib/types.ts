@@ -58,4 +58,6 @@ export interface ChargeRow {
   valorCentavos: number;
   status: ChargeStatus;
   diasAtraso: number;
+  /** Quantas vezes o inquilino abriu o link de pagamento (0 = não abriu). */
+  linkAberturas?: number;
 }

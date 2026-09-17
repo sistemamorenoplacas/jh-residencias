@@ -6,6 +6,7 @@ import type { ChargeRow } from "@/lib/types";
 import { formatBRL } from "@/lib/money";
 import { formatDiaMes } from "@/lib/dates";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { LinkAbertoBadge } from "@/components/ui/LinkAbertoBadge";
 import { DashboardIcon } from "./DashboardIcon";
 
 export function DashboardCharges({
@@ -112,10 +113,13 @@ export function DashboardCharges({
                     {formatBRL(row.valorCentavos)}
                   </td>
                   <td className="estate-td-status">
-                    <StatusPill
-                      status={row.status}
-                      diasAtraso={row.diasAtraso}
-                    />
+                    <span className="inline-flex flex-wrap items-center justify-end gap-1.5">
+                      <StatusPill
+                        status={row.status}
+                        diasAtraso={row.diasAtraso}
+                      />
+                      <LinkAbertoBadge aberturas={row.linkAberturas} />
+                    </span>
                   </td>
                   <td className="estate-td-acao">
                     <Link

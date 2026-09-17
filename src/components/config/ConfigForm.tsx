@@ -1,11 +1,14 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 
 import {
+  aplicarTaxasAosContratos,
   salvarConfiguracoes,
   CONFIG_FORM_INITIAL_STATE,
+  type AplicarTaxasState,
 } from "@/app/(painel)/configuracoes/actions";
+import { descreverMarcos, formatMarcos, parseMarcos } from "@/lib/cobranca-params";
 import type { AppSettings } from "@/lib/settings";
 
 interface ConfigFormProps {
@@ -70,6 +73,18 @@ export function ConfigForm({ settings }: ConfigFormProps) {
   }, [state]);
   const showSaved = state.saved && dismissed !== state;
 
+  // Prévia dos marcos digitados ("3 dias antes, no dia…").
+  const [marcosTexto, setMarcosTexto] = useState(formatMarcos(settings.lembreteMarcos));
+  const marcosParsed = parseMarcos(marcosTexto);
+
+  // "Aplicar a todos os contratos" é uma ação à parte (não faz parte do submit).
+  const [aplicar, setAplicar] = useState<AplicarTaxasState | null>(null);
+  const [aplicando, startAplicar] = useTransition();
+  function aplicarTaxas() {
+    if (!window.confirm("Copiar a multa e os juros salvos para TODOS os contratos ativos?")) return;
+    startAplicar(async () => setAplicar(await aplicarTaxasAosContratos()));
+  }
+
   return (
     <form action={formAction} className="flex flex-col gap-6">
       {/* Automação */}
@@ -94,8 +109,113 @@ export function ConfigForm({ settings }: ConfigFormProps) {
             name="lembretesAtivos"
             defaultChecked={settings.lembretesAtivos}
             titulo="Enviar lembretes automáticos"
-            descricao="Lembra o inquilino 3 dias antes, no vencimento e após o atraso."
+            descricao={`Lembra o inquilino: ${descreverMarcos(settings.lembreteMarcos)}.`}
           />
+        </div>
+      </section>
+
+      {/* Atrasos e lembretes */}
+      <section className="overflow-hidden rounded-card border border-line bg-surface">
+        <header className="border-b border-line px-5 py-4">
+          <h2 className="text-base font-semibold tracking-tight text-ink">
+            Atrasos e lembretes
+          </h2>
+          <p className="mt-0.5 text-sm text-muted">
+            Multa e juros entram no valor devido após o vencimento. Contratos novos nascem
+            com estas taxas; cada contrato pode ter as suas.
+          </p>
+        </header>
+        <div className="grid gap-4 px-5 py-4 sm:grid-cols-3">
+          <div>
+            <label htmlFor="multaPercent" className="label">
+              Multa por atraso (%)
+            </label>
+            <input
+              id="multaPercent"
+              name="multaPercent"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min={0}
+              max={20}
+              defaultValue={settings.multaPercent}
+              className="field mt-1"
+            />
+            <p className="mt-1 text-xs text-faint">Fixa, sobre o valor do aluguel.</p>
+          </div>
+          <div>
+            <label htmlFor="jurosMesPercent" className="label">
+              Juros ao mês (%)
+            </label>
+            <input
+              id="jurosMesPercent"
+              name="jurosMesPercent"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min={0}
+              max={20}
+              defaultValue={settings.jurosMesPercent}
+              className="field mt-1"
+            />
+            <p className="mt-1 text-xs text-faint">Pró-rata por dia de atraso.</p>
+          </div>
+          <div>
+            <label htmlFor="carenciaDias" className="label">
+              Carência (dias)
+            </label>
+            <input
+              id="carenciaDias"
+              name="carenciaDias"
+              type="number"
+              inputMode="numeric"
+              step="1"
+              min={0}
+              max={30}
+              defaultValue={settings.carenciaDias}
+              className="field mt-1"
+            />
+            <p className="mt-1 text-xs text-faint">Dias após o vencimento sem multa/juros.</p>
+          </div>
+          <div className="sm:col-span-3">
+            <label htmlFor="lembreteMarcos" className="label">
+              Lembretes (dias em relação ao vencimento)
+            </label>
+            <input
+              id="lembreteMarcos"
+              name="lembreteMarcos"
+              type="text"
+              inputMode="text"
+              value={marcosTexto}
+              onChange={(e) => setMarcosTexto(e.target.value)}
+              placeholder="-3, 0, 1, 5"
+              className="field mt-1"
+            />
+            <p className={`mt-1 text-xs ${marcosParsed ? "text-faint" : "text-vencido"}`}>
+              {marcosParsed
+                ? `Negativo = antes do vencimento. Hoje: ${descreverMarcos(marcosParsed)}.`
+                : "Use dias inteiros entre -30 e 60, separados por vírgula."}
+            </p>
+          </div>
+          <div className="sm:col-span-3 flex flex-wrap items-center gap-3 border-t border-line pt-4">
+            <button
+              type="button"
+              onClick={aplicarTaxas}
+              disabled={aplicando}
+              className="btn-ghost"
+            >
+              {aplicando ? "Aplicando…" : "Aplicar multa e juros a todos os contratos ativos"}
+            </button>
+            {aplicar ? (
+              <p className={`text-sm ${aplicar.ok ? "text-pago" : "text-vencido"}`} role="status">
+                {aplicar.ok
+                  ? `${aplicar.atualizados} contrato${aplicar.atualizados === 1 ? "" : "s"} atualizado${aplicar.atualizados === 1 ? "" : "s"}.`
+                  : aplicar.error}
+              </p>
+            ) : (
+              <p className="text-xs text-faint">Usa as taxas já salvas. Salve antes, se mudou os valores.</p>
+            )}
+          </div>
         </div>
       </section>
 

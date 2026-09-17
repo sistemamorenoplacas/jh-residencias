@@ -23,6 +23,7 @@ import {
   validarXHubSignature,
   verificarWebhook,
   type StatusUpdate,
+  type WhatsappStatus,
 } from "@/lib/whatsapp";
 
 export const runtime = "nodejs";
@@ -95,17 +96,44 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
  * (sistema, sem usuário). Erros por linha são tolerados para não bloquear o
  * lote inteiro; retorna a contagem de linhas efetivamente atualizadas.
  */
+/**
+ * Ordem dos status: um evento atrasado nunca rebaixa a linha (ex.: "entregue"
+ * chegando depois de "lido"). `falhou` só substitui `enviado`.
+ */
+const STATUS_ANTERIORES: Record<WhatsappStatus, WhatsappStatus[]> = {
+  enviado: [],
+  entregue: ["enviado"],
+  lido: ["enviado", "entregue"],
+  falhou: ["enviado"],
+};
+
 async function aplicarStatuses(
   atualizacoes: readonly StatusUpdate[],
 ): Promise<number> {
   const supabase = createServiceClient();
   let atualizados = 0;
 
-  for (const { wamid, status } of atualizacoes) {
+  for (const { wamid, status, ocorridoEm } of atualizacoes) {
+    // 1) Horário do evento, gravado uma vez (primeira ocorrência).
+    const colunaHorario =
+      status === "entregue" ? "entregue_em" : status === "lido" ? "lido_em" : null;
+    if (colunaHorario && ocorridoEm) {
+      await supabase
+        .from("whatsapp_messages")
+        .update({ [colunaHorario]: ocorridoEm })
+        .eq("wamid", wamid)
+        .is(colunaHorario, null);
+    }
+
+    // 2) Status, só se for um avanço em relação ao atual.
+    const anteriores = STATUS_ANTERIORES[status];
+    if (anteriores.length === 0) continue;
+
     const { data, error } = await supabase
       .from("whatsapp_messages")
       .update({ status })
       .eq("wamid", wamid)
+      .in("status", anteriores)
       .select("id");
 
     if (error) {

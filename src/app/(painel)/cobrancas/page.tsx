@@ -12,6 +12,7 @@ import {
 import { requireUser } from "@/lib/auth";
 import { createServerClient } from "@/lib/supabase/server";
 import type { ChargeRow, ChargeStatus } from "@/lib/types";
+import { anexarAberturas } from "@/lib/charges-query";
 import { diasAtraso } from "@/lib/charges";
 
 /** Filtros aceitos na URL (?status=&competencia=). */
@@ -107,8 +108,8 @@ export default async function CobrancasPage({
 
   const rows: ChargeRow[] = error
     ? []
-    : ((data ?? []) as unknown as ChargeJoinRow[]).map((r) =>
-        toChargeRow(r, hoje),
+    : await anexarAberturas(
+        ((data ?? []) as unknown as ChargeJoinRow[]).map((r) => toChargeRow(r, hoje)),
       );
 
   // Contratos ativos para o seletor de cobrança avulsa.

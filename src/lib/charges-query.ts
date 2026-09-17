@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createServerClient } from "@/lib/supabase/server";
+import { aberturasPorCharge } from "@/lib/rastreio";
 import { diasAtraso } from "@/lib/charges";
 import { competenciaAtual } from "@/lib/charge-generation";
 import type { ChargeRow, ChargeStatus } from "@/lib/types";
@@ -114,7 +115,14 @@ export async function buscarChargeRows(
 
   const hoje = new Date();
   const linhas = (data ?? []) as unknown as ChargeJoinRow[];
-  return linhas.map((row) => paraChargeRow(row, hoje));
+  const rows = linhas.map((row) => paraChargeRow(row, hoje));
+  return anexarAberturas(rows);
+}
+
+/** Preenche `linkAberturas` a partir de `charge_link_views`. */
+export async function anexarAberturas(rows: ChargeRow[]): Promise<ChargeRow[]> {
+  const aberturas = await aberturasPorCharge(rows.map((r) => r.id));
+  return rows.map((r) => ({ ...r, linkAberturas: aberturas.get(r.id)?.total ?? 0 }));
 }
 
 /** Cobranças do mês corrente (competência = 1º dia do mês atual em UTC). */

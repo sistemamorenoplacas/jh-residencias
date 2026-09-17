@@ -38,6 +38,8 @@ interface LeaseFormProps {
   lease?: LeaseFormValues;
   /** Fecha o formulário (cancelar ou após sucesso). */
   onClose: () => void;
+  /** Multa/juros padrão para contratos novos (Configurações → Atrasos). */
+  taxasPadrao?: { multaPercent: number; jurosMesPercent: number };
 }
 
 const DEFAULT_MULTA_PERCENT = 2.0;
@@ -79,7 +81,10 @@ export function LeaseForm({
   tenants,
   lease,
   onClose,
+  taxasPadrao,
 }: LeaseFormProps) {
+  const multaPadrao = taxasPadrao?.multaPercent ?? DEFAULT_MULTA_PERCENT;
+  const jurosPadrao = taxasPadrao?.jurosMesPercent ?? DEFAULT_JUROS_MES_PERCENT;
   const isEdit = Boolean(lease);
   const action = isEdit ? atualizarContrato : criarContrato;
 
@@ -202,7 +207,7 @@ export function LeaseForm({
             step="0.1"
             min={0}
             required
-            defaultValue={lease?.multaPercent ?? DEFAULT_MULTA_PERCENT}
+            defaultValue={lease?.multaPercent ?? multaPadrao}
             className="field tnum"
           />
         </div>
@@ -216,7 +221,7 @@ export function LeaseForm({
             step="0.1"
             min={0}
             required
-            defaultValue={lease?.jurosMesPercent ?? DEFAULT_JUROS_MES_PERCENT}
+            defaultValue={lease?.jurosMesPercent ?? jurosPadrao}
             className="field tnum"
           />
         </div>

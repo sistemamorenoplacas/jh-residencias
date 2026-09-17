@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, test } from "vitest";
 
 import { diasAtraso, valorDevido } from "@/lib/charges";
 
@@ -176,5 +176,37 @@ describe("valorDevido", () => {
     expect(resultado.totalCentavos).toBe(
       resultado.baseCentavos + resultado.multaCentavos + resultado.jurosCentavos,
     );
+  });
+});
+
+describe("valorDevido — carência", () => {
+  const base = { baseCentavos: 100_000, vencimento: "2026-06-10", multaPercent: 2, jurosMesPercent: 1 };
+
+  test("dentro da carência não cobra multa nem juros, mas conta o atraso", () => {
+    const r = valorDevido({ ...base, carenciaDias: 5 }, new Date("2026-06-14T12:00:00Z"));
+    expect(r.diasAtraso).toBe(4);
+    expect(r.multaCentavos).toBe(0);
+    expect(r.jurosCentavos).toBe(0);
+    expect(r.totalCentavos).toBe(100_000);
+  });
+
+  test("no último dia da carência ainda não cobra", () => {
+    const r = valorDevido({ ...base, carenciaDias: 5 }, new Date("2026-06-15T12:00:00Z"));
+    expect(r.diasAtraso).toBe(5);
+    expect(r.totalCentavos).toBe(100_000);
+  });
+
+  test("passada a carência cobra sobre todos os dias de atraso", () => {
+    const r = valorDevido({ ...base, carenciaDias: 5 }, new Date("2026-06-16T12:00:00Z"));
+    expect(r.diasAtraso).toBe(6);
+    expect(r.multaCentavos).toBe(2_000);
+    expect(r.jurosCentavos).toBe(200);
+  });
+
+  test("carência ausente ou negativa equivale a zero", () => {
+    const semCarencia = valorDevido(base, new Date("2026-06-11T12:00:00Z"));
+    const negativa = valorDevido({ ...base, carenciaDias: -3 }, new Date("2026-06-11T12:00:00Z"));
+    expect(semCarencia.multaCentavos).toBe(2_000);
+    expect(negativa.multaCentavos).toBe(2_000);
   });
 });

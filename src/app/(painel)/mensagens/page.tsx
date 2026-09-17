@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/shell/AppShell";
+import { aberturasPorCharge, formatQuando, type AberturasLink } from "@/lib/rastreio";
 import { createServerClient } from "@/lib/supabase/server";
 import type { DbWhatsappMessage, WhatsappStatusDb } from "@/lib/db-types";
 import { formatData } from "@/lib/dates";
@@ -25,6 +26,8 @@ const TEMPLATE_LABELS: Record<string, string> = {
 /** Shape do join whatsapp_messages -> tenants. */
 interface WhatsappMessageJoinRow
   extends Omit<DbWhatsappMessage, "tenant_id"> {
+  entregue_em: string | null;
+  lido_em: string | null;
   tenants: { nome: string } | null;
 }
 
@@ -35,6 +38,11 @@ interface MensagemRow {
   status: WhatsappStatusDb;
   erro: string | null;
   dataHora: string;
+  /** Quando foi entregue/lida (webhook da Meta), curto: "17/09 14:32". */
+  entregueEm: string | null;
+  lidoEm: string | null;
+  /** Aberturas do link de pagamento da cobrança desta mensagem. */
+  aberturas: AberturasLink | null;
 }
 
 /** Traduz o valor cru de `template` para um rótulo amigável em pt-BR. */
@@ -54,7 +62,10 @@ function formatDataHora(iso: string): string {
 }
 
 /** `WhatsappMessageJoinRow` -> `MensagemRow` (camelCase, pronto p/ a UI). */
-function toMensagemRow(row: WhatsappMessageJoinRow): MensagemRow {
+function toMensagemRow(
+  row: WhatsappMessageJoinRow,
+  aberturas: Map<string, AberturasLink>,
+): MensagemRow {
   return {
     id: row.id,
     inquilino: row.tenants?.nome ?? "—",
@@ -62,7 +73,39 @@ function toMensagemRow(row: WhatsappMessageJoinRow): MensagemRow {
     status: row.status,
     erro: row.erro,
     dataHora: formatDataHora(row.created_at),
+    entregueEm: row.entregue_em ? formatQuando(row.entregue_em) : null,
+    lidoEm: row.lido_em ? formatQuando(row.lido_em) : null,
+    aberturas: row.charge_id ? (aberturas.get(row.charge_id) ?? null) : null,
   };
+}
+
+/** Linha de acompanhamento: quando leu e se abriu o link. */
+function Acompanhamento({ m }: { m: MensagemRow }) {
+  const partes: string[] = [];
+  if (m.lidoEm) partes.push(`Lida ${m.lidoEm}`);
+  else if (m.entregueEm) partes.push(`Entregue ${m.entregueEm}`);
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
+      {partes.length ? <span className="text-faint tnum">{partes.join(" · ")}</span> : null}
+      {m.aberturas ? (
+        <span className="inline-flex items-center gap-1 rounded-pill bg-brand-tint px-2 py-0.5 font-medium text-brand">
+          <IconEye />
+          Abriu o link {m.aberturas.total > 1 ? `${m.aberturas.total}×` : ""} · {formatQuando(m.aberturas.ultimaEm)}
+        </span>
+      ) : m.status !== "falhou" ? (
+        <span className="text-faint">Não abriu o link</span>
+      ) : null}
+    </div>
+  );
+}
+
+function IconEye() {
+  return (
+    <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
 }
 
 const STATUS_BADGE: Record<WhatsappStatusDb, { label: string; className: string }> = {
@@ -91,16 +134,16 @@ export default async function MensagensPage() {
   const { data, error } = await supabase
     .from("whatsapp_messages")
     .select(
-      "id, owner_id, charge_id, tenant_id, template, wamid, status, erro, created_at, tenants(nome)",
+      "id, owner_id, charge_id, tenant_id, template, wamid, status, erro, created_at, entregue_em, lido_em, tenants(nome)",
     )
     .order("created_at", { ascending: false })
     .limit(LIMITE_MENSAGENS);
 
-  const mensagens: MensagemRow[] = error
-    ? []
-    : ((data ?? []) as unknown as WhatsappMessageJoinRow[]).map(
-        toMensagemRow,
-      );
+  const rows = error ? [] : ((data ?? []) as unknown as WhatsappMessageJoinRow[]);
+  const aberturas = await aberturasPorCharge(
+    rows.map((r) => r.charge_id).filter((id): id is string => Boolean(id)),
+  );
+  const mensagens: MensagemRow[] = rows.map((r) => toMensagemRow(r, aberturas));
 
   return (
     <AppShell
@@ -158,6 +201,7 @@ export default async function MensagensPage() {
                       {m.status === "falhou" && m.erro ? (
                         <p className="mt-1 text-xs text-faint">{m.erro}</p>
                       ) : null}
+                      <Acompanhamento m={m} />
                     </td>
                   </tr>
                 ))}
@@ -190,6 +234,7 @@ export default async function MensagensPage() {
                 {m.status === "falhou" && m.erro ? (
                   <p className="mt-2 text-xs text-faint">{m.erro}</p>
                 ) : null}
+                <Acompanhamento m={m} />
               </li>
             ))}
           </ul>

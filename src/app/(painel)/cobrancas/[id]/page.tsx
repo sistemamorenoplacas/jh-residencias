@@ -7,6 +7,9 @@ import {
   type ChargeDetailData,
 } from "@/components/charges/ChargeDetail";
 import { requireUser } from "@/lib/auth";
+import { getSettings } from "@/lib/settings";
+import { aberturasPorCharge } from "@/lib/rastreio";
+import { ChargeTracking, type MensagemRastreio } from "@/components/charges/ChargeTracking";
 import { createServerClient } from "@/lib/supabase/server";
 import type { ChargeStatus } from "@/lib/types";
 import { valorDevido, type ValorDevido } from "@/lib/charges";
@@ -47,7 +50,7 @@ const IconBack = (
  * Calcula o valor devido. Para charges em aberto (pendente/vencido) aplica
  * multa/juros via `valorDevido`. Para pago/cancelado, mostra só a base.
  */
-function calcularValor(row: ChargeDetailRow, hoje: Date): ValorDevido {
+function calcularValor(row: ChargeDetailRow, hoje: Date, carenciaDias: number): ValorDevido {
   const emAberto = row.status === "pendente" || row.status === "vencido";
   if (!emAberto) {
     return {
@@ -65,6 +68,7 @@ function calcularValor(row: ChargeDetailRow, hoje: Date): ValorDevido {
       vencimento: row.vencimento,
       multaPercent: row.leases?.multa_percent ?? 0,
       jurosMesPercent: row.leases?.juros_mes_percent ?? 0,
+      carenciaDias,
     },
     hoje,
   );
@@ -99,9 +103,10 @@ export default async function CobrancaDetalhePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireUser();
+  const user = await requireUser();
   const { id } = await params;
   const hoje = new Date();
+  const settings = await getSettings(user.ownerId);
 
   const supabase = await createServerClient();
   const { data, error } = await supabase
@@ -117,7 +122,33 @@ export default async function CobrancaDetalhePage({
   }
 
   const row = data as unknown as ChargeDetailRow;
-  const valor = calcularValor(row, hoje);
+  const valor = calcularValor(row, hoje, settings.carenciaDias);
+
+  // Acompanhamento: mensagens desta cobrança + aberturas do link.
+  const [{ data: msgs }, aberturas] = await Promise.all([
+    supabase
+      .from("whatsapp_messages")
+      .select("id, template, status, created_at, entregue_em, lido_em")
+      .eq("charge_id", id)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    aberturasPorCharge([id]),
+  ]);
+  const mensagens: MensagemRastreio[] = ((msgs ?? []) as {
+    id: string;
+    template: string;
+    status: MensagemRastreio["status"];
+    created_at: string;
+    entregue_em: string | null;
+    lido_em: string | null;
+  }[]).map((m) => ({
+    id: m.id,
+    template: m.template,
+    status: m.status,
+    enviadaEm: m.created_at,
+    entregueEm: m.entregue_em,
+    lidoEm: m.lido_em,
+  }));
 
   const charge: ChargeDetailData = {
     id: row.id,
@@ -143,7 +174,10 @@ export default async function CobrancaDetalhePage({
         Voltar
       </Link>
 
-      <ChargeDetail charge={charge} />
+      <div className="flex flex-col gap-5">
+        <ChargeDetail charge={charge} />
+        <ChargeTracking mensagens={mensagens} aberturas={aberturas.get(id) ?? null} />
+      </div>
     </AppShell>
   );
 }

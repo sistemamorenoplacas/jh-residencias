@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/shell/AppShell";
 import { requireUser } from "@/lib/auth";
+import { getSettings } from "@/lib/settings";
 import { createServerClient } from "@/lib/supabase/server";
 import type { DbLease, DbProperty, DbTenant } from "@/lib/db-types";
 import {
@@ -73,13 +74,21 @@ async function carregarContratos(): Promise<ContratosData> {
 }
 
 export default async function ContratosPage() {
-  await requireUser();
-  const { leases, properties, tenants } = await carregarContratos();
+  const user = await requireUser();
+  const [{ leases, properties, tenants }, settings] = await Promise.all([
+    carregarContratos(),
+    getSettings(user.ownerId),
+  ]);
 
   return (
     <AppShell title="Contratos" subtitle="Aluguéis vinculados a imóveis e inquilinos">
       <section>
-        <LeaseList leases={leases} properties={properties} tenants={tenants} />
+        <LeaseList
+          leases={leases}
+          properties={properties}
+          tenants={tenants}
+          taxasPadrao={{ multaPercent: settings.multaPercent, jurosMesPercent: settings.jurosMesPercent }}
+        />
       </section>
     </AppShell>
   );

@@ -87,6 +87,8 @@ export type WhatsappStatus = "enviado" | "entregue" | "lido" | "falhou";
 export interface StatusUpdate {
   wamid: string;
   status: WhatsappStatus;
+  /** Quando aconteceu, em ISO (a Meta manda `timestamp` em segundos Unix). */
+  ocorridoEm: string | null;
 }
 
 /** Remove o `+` inicial de um número E.164 — a Graph API espera só dígitos. */
@@ -390,7 +392,14 @@ export function parseStatuses(payload: unknown): StatusUpdate[] {
         const mapped = STATUS_MAP[rawStatus];
         if (!mapped) continue;
 
-        updates.push({ wamid, status: mapped });
+        const rawTs = (status as { timestamp?: unknown }).timestamp;
+        const segundos =
+          typeof rawTs === "string" || typeof rawTs === "number" ? Number(rawTs) : NaN;
+        const ocorridoEm = Number.isFinite(segundos) && segundos > 0
+          ? new Date(segundos * 1000).toISOString()
+          : null;
+
+        updates.push({ wamid, status: mapped, ocorridoEm });
       }
     }
   }

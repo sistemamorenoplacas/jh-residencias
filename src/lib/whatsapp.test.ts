@@ -159,9 +159,9 @@ describe("parseStatuses", () => {
               value: {
                 statuses: [
                   { id: "wamid.1", status: "sent" },
-                  { id: "wamid.2", status: "delivered" },
-                  { id: "wamid.3", status: "read" },
-                  { id: "wamid.4", status: "failed" },
+                  { id: "wamid.2", status: "delivered", timestamp: "1780000000" },
+                  { id: "wamid.3", status: "read", timestamp: 1780000060 },
+                  { id: "wamid.4", status: "failed", timestamp: "abc" },
                 ],
               },
             },
@@ -175,10 +175,10 @@ describe("parseStatuses", () => {
 
     // Assert
     expect(updates).toEqual([
-      { wamid: "wamid.1", status: "enviado" },
-      { wamid: "wamid.2", status: "entregue" },
-      { wamid: "wamid.3", status: "lido" },
-      { wamid: "wamid.4", status: "falhou" },
+      { wamid: "wamid.1", status: "enviado", ocorridoEm: null },
+      { wamid: "wamid.2", status: "entregue", ocorridoEm: "2026-05-28T20:26:40.000Z" },
+      { wamid: "wamid.3", status: "lido", ocorridoEm: "2026-05-28T20:27:40.000Z" },
+      { wamid: "wamid.4", status: "falhou", ocorridoEm: null },
     ]);
   });
 
@@ -205,7 +205,7 @@ describe("parseStatuses", () => {
     const updates = parseStatuses(payload);
 
     // Assert
-    expect(updates).toEqual([{ wamid: "wamid.2", status: "enviado" }]);
+    expect(updates).toEqual([{ wamid: "wamid.2", status: "enviado", ocorridoEm: null }]);
   });
 
   it("ignora entradas malformadas (sem id ou status)", () => {
@@ -258,8 +258,8 @@ describe("parseStatuses", () => {
 
     // Assert
     expect(updates).toEqual([
-      { wamid: "a", status: "enviado" },
-      { wamid: "b", status: "lido" },
+      { wamid: "a", status: "enviado", ocorridoEm: null },
+      { wamid: "b", status: "lido", ocorridoEm: null },
     ]);
   });
 });

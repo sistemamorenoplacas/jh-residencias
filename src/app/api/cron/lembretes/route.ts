@@ -34,7 +34,8 @@ import {
 } from "@/lib/charges-repo";
 import { formatBRL } from "@/lib/money";
 import { formatCompetencia, formatData } from "@/lib/dates";
-import { ownersComAutomacaoDesligada } from "@/lib/settings";
+import { marcosLembretePorOwner, ownersComAutomacaoDesligada } from "@/lib/settings";
+import { LEMBRETE_MARCOS_PADRAO } from "@/lib/cobranca-params";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -210,9 +211,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // 2) Busca candidatas + 3) envia, evitando reenvio no mesmo dia.
   let lembretes: ChargeLembrete[];
   let jaLembradas: Set<string>;
+  let marcosPorOwner: Map<string, number[]>;
   try {
+    // Cada dono configura seus marcos (Configurações → Atrasos e lembretes);
+    // buscamos pela união e filtramos por dono logo abaixo.
+    marcosPorOwner = await marcosLembretePorOwner();
+    const uniao = new Set<number>(LEMBRETE_MARCOS_PADRAO);
+    for (const marcos of marcosPorOwner.values()) marcos.forEach((m) => uniao.add(m));
     [lembretes, jaLembradas] = await Promise.all([
-      buscarChargesParaLembrete(hoje),
+      buscarChargesParaLembrete(hoje, [...uniao]),
       chargesJaLembradasHoje(hojeStr),
     ]);
   } catch (error: unknown) {
@@ -231,6 +238,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   for (const lembrete of lembretes) {
     if (jaLembradas.has(lembrete.charge.id)) continue;
     if (semLembretes.has(lembrete.charge.owner_id)) continue;
+    const marcosDoDono =
+      marcosPorOwner.get(lembrete.charge.owner_id) ?? LEMBRETE_MARCOS_PADRAO;
+    if (!marcosDoDono.includes(lembrete.marcoDias)) continue;
 
     try {
       await processarLembrete(lembrete);
