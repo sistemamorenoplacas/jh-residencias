@@ -36,6 +36,34 @@ const paths = {
       <path d="M7 3v4M17 3v4M3 11h18" />
     </>
   ),
+  coins: (
+    <>
+      <ellipse cx="10" cy="7" rx="6" ry="2.6" />
+      <path d="M4 7v5c0 1.4 2.7 2.6 6 2.6s6-1.2 6-2.6V7" />
+      <path d="M4 12v5c0 1.4 2.7 2.6 6 2.6s6-1.2 6-2.6v-5" />
+      <path d="M20 10.5c0-1.4-1.4-2.4-3.5-2.6" />
+    </>
+  ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 2" />
+    </>
+  ),
+  card: (
+    <>
+      <rect x="3" y="6" width="18" height="13" rx="2.5" />
+      <path d="M3 10.5h18M7 15h3" />
+    </>
+  ),
+  chevron: <path d="m9 6 6 6-6 6" />,
+  check: <path d="M20 6 9 17l-5-5" />,
+  bell: (
+    <>
+      <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" />
+      <path d="M10 20a2 2 0 0 0 4 0" />
+    </>
+  ),
 };
 
 export function DashboardIcon({

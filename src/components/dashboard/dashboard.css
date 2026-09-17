@@ -128,10 +128,45 @@
   gap: 12px;
 }
 .estate-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 1.8px;
+  text-transform: uppercase;
   color: var(--color-muted);
+}
+.estate-eyebrow-icon,
+.estate-period-chevron,
+.estate-total-icon,
+.estate-stat-icon,
+.estate-sparkline,
+.estate-badge-check,
+.estate-caption-period svg,
+.estate-brand-logo--light,
+.estate-only-mobile {
+  display: none;
+}
+.estate-period:hover {
+  color: var(--color-brand);
+}
+.estate-hero-l2 b {
+  font-weight: inherit;
+  color: var(--color-brand);
+}
+.estate-stat-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.estate-small-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  /* verde mais escuro que --color-pago: 5,9:1 sobre o tint (texto pequeno) */
+  color: #116b32;
 }
 .estate-period {
   display: inline-flex;
@@ -152,9 +187,6 @@
   font-weight: 600;
   font-family: var(--font-serif);
   color: var(--color-brand-dark);
-}
-.estate-hero h1 > span {
-  color: var(--color-brand);
 }
 .estate-hero-description {
   font-size: 12px;
@@ -344,12 +376,10 @@
   color: var(--estate-muted);
 }
 .estate-small-badge {
-  display: inline-block;
   margin-left: 3px;
   padding: 3px 6px;
   border-radius: 20px;
   background: var(--color-pago-tint);
-  color: var(--color-pago);
   font-size: 9px;
 }
 .estate-mini-bars {
@@ -1069,55 +1099,89 @@
   .estate-shell {
     padding: 0 14px calc(96px + env(safe-area-inset-bottom));
   }
+  /* Topo navy contínuo: header + hero sangram até as bordas. */
   .estate-header {
-    padding: 10px 0 6px;
+    margin: 0 -14px;
+    padding: 12px 14px 4px;
+    background: #061a3a;
   }
-  .estate-brand-logo {
-    width: 50px;
-    height: 53px;
+  .estate-only-desktop {
+    display: none;
+  }
+  .estate-only-mobile,
+  .estate-badge-check {
+    display: block;
+  }
+  /* Anel de foco visível sobre o navy. */
+  .estate-header :is(a, button):focus-visible,
+  .estate-hero :is(a, button):focus-visible {
+    outline-color: #fff;
+    outline-offset: 3px;
+  }
+  .estate-header-actions > .estate-icon-button[aria-current] {
+    background: #fff;
+    color: var(--color-brand-dark);
+  }
+  .estate-brand-logo--dark {
+    display: none;
+  }
+  .estate-brand-logo--light {
+    display: block;
+    width: 64px;
+    height: 57px;
+    object-fit: contain;
   }
   .estate-header-actions {
-    gap: 6px;
+    gap: 8px;
   }
   .estate-header-actions > .estate-icon-button,
   .estate-avatar {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #fff;
+  }
+  .estate-header-actions > .estate-icon-button:hover {
+    background: rgba(255, 255, 255, 0.14);
+    transform: none;
   }
   .estate-avatar {
-    font-size: 15px;
-    border-width: 2px;
+    font-size: 16px;
   }
 
-  /* Hero vira um cartão fotográfico navy com os números por cima. */
+  /* Hero: faixa navy com o cartão (foto à direita, números em painel de vidro). */
   .estate-hero {
     position: relative;
     display: block;
-    margin-top: 6px;
-    border-radius: 26px;
-    overflow: hidden;
-    background: var(--color-brand-dark);
+    margin: 0 -14px;
+    padding: 6px 14px 16px;
+    background: #061a3a;
+    border-radius: 0 0 26px 26px;
     color: #fff;
   }
   .estate-hero-visual {
     position: absolute;
-    inset: 0;
+    top: 6px;
+    right: 14px;
+    bottom: 16px;
+    left: 14px;
     z-index: 0;
     height: auto;
     margin: 0;
-    border-radius: 0;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(160deg, #0c2b5e 0%, #071f47 60%, #061a3a 100%);
   }
   .estate-hero-visual img {
-    object-position: center 64%;
-    opacity: 0.6;
+    object-position: right top;
+    opacity: 0.85;
+    filter: brightness(0.55) saturate(0.7);
+    mask-image: linear-gradient(to right, transparent 42%, #000 88%);
+    -webkit-mask-image: linear-gradient(to right, transparent 42%, #000 88%);
   }
   .estate-hero-visual::after {
-    background: linear-gradient(
-      180deg,
-      rgba(4, 26, 61, 0.96) 0%,
-      rgba(4, 26, 61, 0.84) 46%,
-      rgba(4, 26, 61, 0.58) 100%
-    );
+    background: linear-gradient(180deg, rgba(6, 26, 58, 0.12) 0%, rgba(6, 26, 58, 0.55) 40%, rgba(6, 26, 58, 0.94) 70%, #061a3a 100%);
   }
   .estate-visual-caption {
     display: none;
@@ -1125,66 +1189,160 @@
   .estate-hero-copy {
     position: relative;
     z-index: 1;
-    padding: 20px 18px 20px;
+    padding: 18px 16px 16px;
   }
-  .estate-hero .estate-eyebrow,
-  .estate-hero .estate-period,
-  .estate-hero-description,
-  .estate-hero-totals p,
-  .estate-progress-caption {
-    color: rgba(255, 255, 255, 0.72);
+  .estate-hero-intro {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .estate-hero .estate-eyebrow {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: rgba(255, 255, 255, 0.78);
+  }
+  .estate-eyebrow-icon {
+    display: block;
+    width: 17px;
+    height: 17px;
+  }
+  .estate-hero .estate-period {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.62);
+  }
+  .estate-period-icon {
+    display: none;
+  }
+  .estate-period-chevron {
+    display: block;
+    width: 15px;
+    height: 15px;
+    margin-left: 2px;
+    color: #fff;
   }
   .estate-hero h1 {
-    margin-top: 14px;
-    font-size: 30px;
+    margin-top: 8px;
+    font-size: 32px;
+    line-height: 1.02;
     letter-spacing: -1.2px;
     color: #fff;
   }
-  .estate-hero h1 > span {
-    color: #9ec0ff;
+  .estate-hero h1 .estate-hero-l2,
+  .estate-hero h1 .estate-hero-l2 b {
+    color: #7db8ff;
   }
   .estate-hero-description {
     margin-top: 8px;
-    font-size: 12px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.72);
   }
   .estate-hero-totals {
-    margin-top: 20px;
-    gap: 10px;
+    margin-top: 14px;
+    gap: 0;
+    padding: 10px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(8px);
   }
   .estate-hero-totals > div {
-    padding-left: 12px;
-    border-left-color: rgba(255, 255, 255, 0.28);
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    min-width: 0;
+    padding: 0 8px 0 0;
+    border-left: 0;
+  }
+  /* Valores dos dois totais na mesma linha de base, mesmo se um rótulo quebrar. */
+  .estate-hero-totals > div > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+  .estate-hero-totals > div + div {
+    padding: 0 0 0 10px;
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .estate-hero-totals > div:first-child p {
+    color: #8ec5ff;
+  }
+  .estate-total-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    align-self: flex-start;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #fff;
+  }
+  .estate-total-icon svg {
+    width: 16px;
+    height: 16px;
   }
   .estate-hero-totals p {
-    font-size: 11px;
+    margin-bottom: 3px;
+    font-size: 10.5px;
+    line-height: 1.25;
+    text-wrap: balance;
+    color: rgba(255, 255, 255, 0.78);
   }
   .estate-hero-totals strong {
-    font-size: 24px;
-    letter-spacing: -1px;
+    display: block;
+    font-size: clamp(15px, 4.6vw, 22px);
+    letter-spacing: -0.8px;
+    line-height: 1.15;
+    white-space: nowrap;
     color: #fff;
   }
   .estate-progress {
-    height: 12px;
-    margin-top: 18px;
-    background: rgba(255, 255, 255, 0.14);
+    height: 6px;
+    margin-top: 10px;
+    background: rgba(255, 255, 255, 0.12);
   }
   .estate-progress > span {
-    background: #fff;
+    background: #3ddc84;
   }
   .estate-progress > span + span {
-    background: rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.5);
   }
   .estate-progress-caption {
+    flex-wrap: wrap;
+    justify-content: space-between;
     margin-top: 8px;
-    font-size: 10px;
+    gap: 6px 10px;
+    padding: 9px 10px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .estate-progress-caption > span {
+    white-space: nowrap;
   }
   .estate-progress-caption i {
-    background: #fff;
+    width: 8px;
+    height: 8px;
+    background: #3ddc84;
   }
   .estate-progress-caption span:nth-child(2) i {
-    background: rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.5);
   }
   .estate-progress-caption b {
+    color: #fff;
+  }
+  .estate-caption-period {
+    margin-left: auto;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .estate-caption-period svg {
+    display: block;
     color: #fff;
   }
 
@@ -1204,30 +1362,82 @@
   }
   .estate-stat {
     min-height: 0;
-    padding: 14px 14px 13px;
+    justify-content: flex-start;
+    padding: 16px 12px 14px;
+  }
+  .estate-stat .estate-section-heading {
+    align-items: center;
+    gap: 8px;
   }
   .estate-section-heading h2 {
     font-size: 16px;
   }
   .estate-stat h2 {
-    font-size: 12.5px;
+    min-width: 0;
+    font-size: 12px;
     line-height: 1.2;
     letter-spacing: -0.2px;
+    overflow-wrap: anywhere;
+  }
+  .estate-stat-title {
+    flex: 1 1 auto;
+    gap: 6px;
+  }
+  .estate-stat-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #fff;
+  }
+  .estate-stat-icon.is-green {
+    background: var(--color-pago-tint);
+    border-color: transparent;
+    color: var(--color-pago);
   }
   .estate-stat .estate-icon-button {
-    width: 26px;
-    height: 26px;
+    width: 30px;
+    height: 30px;
   }
   .estate-stat .estate-icon-button svg {
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
+  }
+  /* Visualmente um chevron solto, mas com alvo de toque de 36px. */
+  .estate-stat .estate-chevron-link {
+    width: 36px;
+    height: 36px;
+    margin: -6px -8px -6px 0;
+    background: transparent;
+    color: var(--color-brand);
+  }
+  .estate-stat .estate-chevron-link svg {
+    width: 18px;
+    height: 18px;
   }
   .estate-stat-bottom {
-    margin-top: 18px;
+    margin-top: 16px;
   }
   .estate-stat .estate-number {
-    font-size: 21px;
-    letter-spacing: -0.8px;
+    font-size: clamp(20px, 6.6vw, 26px);
+    letter-spacing: -0.9px;
+  }
+  .estate-sparkline {
+    display: block;
+    width: calc(100% + 24px);
+    height: 52px;
+    margin: auto -12px -14px;
+    padding-top: 10px;
+    border-radius: 0 0 22px 22px;
+    overflow: hidden;
+  }
+  .estate-small-badge {
+    padding: 6px 10px;
+    font-size: 11px;
   }
   .estate-stat-bottom p {
     font-size: 10px;
@@ -1452,6 +1662,27 @@
   }
 }
 
+@media (max-width: 360px) {
+  .estate-hero-totals {
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+  }
+  .estate-hero-totals > div {
+    padding: 0;
+  }
+  .estate-hero-totals > div + div {
+    padding: 8px 0 0;
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .estate-hero-totals strong {
+    font-size: 20px;
+  }
+  .estate-stat-icon {
+    display: none;
+  }
+}
+
 /* Barra inferior flutuante (MobileNav) — abaixo de 1024px. */
 .mobile-bar {
   bottom: calc(10px + env(safe-area-inset-bottom));
@@ -1470,7 +1701,7 @@
   font-size: 10px;
   font-weight: 500;
   line-height: 1;
-  color: var(--color-faint);
+  color: var(--color-muted);
   transition:
     background 0.2s,
     color 0.2s;

@@ -1,3 +1,4 @@
+import { useId } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { DbProperty } from "@/lib/db-types";
@@ -31,6 +32,50 @@ const typeLabels = {
   apartamento: "Apartamento",
   comercial: "Comercial",
 };
+
+/** Linha de tendência (celular): 6 pontos com área e ponto final. */
+function Sparkline({ values }: { values: number[] }) {
+  const gradId = `${useId()}-fill`;
+  const w = 120;
+  const h = 44;
+  const max = Math.max(1, ...values);
+  const pts = values.map((v, i) => [
+    (i / Math.max(1, values.length - 1)) * w,
+    h - 4 - (v / max) * (h - 10),
+  ]);
+  const line = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
+  const last = pts[pts.length - 1];
+  return (
+    <svg
+      className="estate-sparkline"
+      viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id={gradId} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor="#5aa6ff" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#5aa6ff" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {pts.length > 1 ? (
+        <>
+          <path d={`${line} L${w} ${h} L0 ${h} Z`} fill={`url(#${gradId})`} />
+          <path
+            d={line}
+            fill="none"
+            stroke="#5aa6ff"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+          />
+          {last ? <circle cx={last[0]} cy={last[1]} r="3.2" fill="#8ec5ff" vectorEffect="non-scaling-stroke" /> : null}
+        </>
+      ) : null}
+    </svg>
+  );
+}
 
 function MiniBars({ values }: { values: number[] }) {
   return (
@@ -83,29 +128,47 @@ export function DashboardView({
         <div className="estate-hero-copy">
           <div className="estate-hero-intro">
             <span className="estate-eyebrow">
-              SEU PATRIMÔNIO, EM PERSPECTIVA
+              <DashboardIcon name="calendar" className="estate-eyebrow-icon" />
+              Seu patrimônio, em perspectiva
             </span>
-            <span className="estate-period">
-              <DashboardIcon name="calendar" />
+            <Link
+              href="/cobrancas"
+              className="estate-period"
+              aria-label={`Ver cobranças de ${subtitle}`}
+            >
+              <DashboardIcon name="calendar" className="estate-period-icon" />
               {subtitle}
-            </span>
+              <DashboardIcon name="chevron" className="estate-period-chevron" strokeWidth="2.4" />
+            </Link>
           </div>
           <h1 id="dashboard-title">
             Um olhar sobre
             <br />
-            seus imóveis<span>.</span>
+            <span className="estate-hero-l2">
+              seus imóveis<b>.</b>
+            </span>
           </h1>
           <p className="estate-hero-description">
             Mais clareza para cuidar do que é seu.
           </p>
           <div className="estate-hero-totals">
             <div>
-              <p>Aluguéis recebidos</p>
-              <strong>{money(kpis.recebidoCentavos)}</strong>
+              <span className="estate-total-icon" aria-hidden="true">
+                <DashboardIcon name="coins" />
+              </span>
+              <div>
+                <p>Aluguéis recebidos</p>
+                <strong>{money(kpis.recebidoCentavos)}</strong>
+              </div>
             </div>
             <div>
-              <p>Pendente de recebimento</p>
-              <strong>{money(kpis.pendenteCentavos)}</strong>
+              <span className="estate-total-icon" aria-hidden="true">
+                <DashboardIcon name="clock" />
+              </span>
+              <div>
+                <p>Pendente de recebimento</p>
+                <strong>{money(kpis.pendenteCentavos)}</strong>
+              </div>
             </div>
           </div>
           <div
@@ -128,7 +191,10 @@ export function DashboardView({
             <span>
               <i /> Pendente
             </span>
-            <span>Competência atual</span>
+            <span className="estate-caption-period">
+              <DashboardIcon name="chevron" width="12" height="12" strokeWidth="2.4" />
+              Competência atual
+            </span>
           </div>
         </div>
         <div className="estate-hero-visual" aria-hidden="true">
@@ -149,7 +215,12 @@ export function DashboardView({
         <div className="estate-stat-stack">
           <section className="estate-card estate-stat">
             <div className="estate-section-heading">
-              <h2>Receita do mês</h2>
+              <div className="estate-stat-title">
+                <span className="estate-stat-icon" aria-hidden="true">
+                  <DashboardIcon name="calendar" />
+                </span>
+                <h2>Receita do mês</h2>
+              </div>
               <Link
                 href="/cobrancas"
                 className="estate-icon-button"
@@ -171,16 +242,23 @@ export function DashboardView({
               </div>
               <MiniBars values={tendencias.recebido} />
             </div>
+            <Sparkline values={tendencias.recebido} />
           </section>
           <section className="estate-card estate-stat">
             <div className="estate-section-heading">
-              <h2>Pagamentos concluídos</h2>
+              <div className="estate-stat-title">
+                <span className="estate-stat-icon is-green" aria-hidden="true">
+                  <DashboardIcon name="card" />
+                </span>
+                <h2>Pagamentos concluídos</h2>
+              </div>
               <Link
                 href="/cobrancas"
-                className="estate-icon-button"
+                className="estate-icon-button estate-chevron-link"
                 aria-label="Ver pagamentos nas cobranças"
               >
-                <DashboardIcon name="arrow" />
+                <DashboardIcon name="arrow" className="estate-only-desktop" />
+                <DashboardIcon name="chevron" className="estate-only-mobile" strokeWidth="2.4" />
               </Link>
             </div>
             <div className="estate-stat-bottom">
@@ -191,6 +269,7 @@ export function DashboardView({
                 <p>
                   neste mês{" "}
                   <span className="estate-small-badge">
+                    <DashboardIcon name="check" className="estate-badge-check" width="10" height="10" strokeWidth="3" />
                     {chargesFailed ? "—" : `${kpis.recebidoPct}% recebido`}
                   </span>
                 </p>

@@ -26,8 +26,17 @@ export function DashboardNav({ user }: { user?: ShellUser }) {
           alt="JH Residências"
           width={100}
           height={106}
-          className="estate-brand-logo"
-          preload
+          className="estate-brand-logo estate-brand-logo--dark"
+          loading="lazy"
+        />
+        {/* Versão branca para o topo navy do celular (<=700px). */}
+        <Image
+          src="/logo-branca.png"
+          alt=""
+          width={1500}
+          height={1333}
+          className="estate-brand-logo estate-brand-logo--light"
+          sizes="120px"
         />
       </Link>
       <nav className="estate-navigation" aria-label="Navegação principal">
@@ -59,7 +68,8 @@ export function DashboardNav({ user }: { user?: ShellUser }) {
           title="Mensagens"
           aria-current={isActive(pathname, "/mensagens") ? "page" : undefined}
         >
-          <DashboardIcon name="message" />
+          <DashboardIcon name="message" className="estate-only-desktop" />
+          <DashboardIcon name="bell" className="estate-only-mobile" />
         </Link>
         <Link
           href="/configuracoes"
