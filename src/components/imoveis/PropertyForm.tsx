@@ -6,6 +6,7 @@ import { useFormStatus } from "react-dom";
 import type { DbProperty, PropertyTipoDb } from "@/lib/db-types";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 import { FotoUpload } from "@/components/imoveis/FotoUpload";
+import { CepEndereco } from "@/components/imoveis/CepEndereco";
 import {
   criarImovel,
   editarImovel,
@@ -124,21 +125,7 @@ export function PropertyForm({ mode, property, onClose }: PropertyFormProps) {
               />
             </div>
 
-            <div>
-              <label htmlFor={enderecoId} className="label">
-                Endereço
-              </label>
-              <input
-                id={enderecoId}
-                name="endereco"
-                type="text"
-                required
-                maxLength={200}
-                defaultValue={property?.endereco ?? ""}
-                placeholder="Rua, número, bairro, cidade"
-                className="field"
-              />
-            </div>
+            <CepEndereco enderecoId={enderecoId} enderecoInicial={property?.endereco ?? ""} />
 
             <div>
               <label htmlFor={tipoId} className="label">
