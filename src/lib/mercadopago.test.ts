@@ -19,6 +19,8 @@ const SECRET = "meu-segredo-mp";
 const DATA_ID = "123456";
 const REQUEST_ID = "req-abc";
 const TS = "1700000000";
+/** Instante "agora" coerente com TS (segundos Unix) para a janela de replay. */
+const AGORA = new Date(Number(TS) * 1000 + 30_000);
 
 /** Reproduz a assinatura `v1` esperada para dados conhecidos. */
 function assinarManifest(secret: string): string {
@@ -69,10 +71,48 @@ describe("validarAssinaturaWebhook", () => {
       xRequestId: REQUEST_ID,
       dataId: DATA_ID,
       secret: SECRET,
+      agora: AGORA,
     });
 
     // Assert
     expect(valido).toBe(true);
+  });
+
+  it("aceita ts em milissegundos dentro da janela", () => {
+    // Arrange: mesmo instante, expresso em ms
+    const tsMs = String(Number(TS) * 1000);
+    const manifest = `id:${DATA_ID};request-id:${REQUEST_ID};ts:${tsMs};`;
+    const v1 = createHmac("sha256", SECRET).update(manifest).digest("hex");
+
+    // Act
+    const valido = validarAssinaturaWebhook({
+      xSignature: `ts=${tsMs},v1=${v1}`,
+      xRequestId: REQUEST_ID,
+      dataId: DATA_ID,
+      secret: SECRET,
+      agora: AGORA,
+    });
+
+    // Assert
+    expect(valido).toBe(true);
+  });
+
+  it("rejeita assinatura válida com ts fora da janela de 5 min (replay)", () => {
+    // Arrange: HMAC correto, mas o ts é de 10 minutos atrás
+    const v1 = assinarManifest(SECRET);
+    const agora = new Date(Number(TS) * 1000 + 10 * 60 * 1000);
+
+    // Act
+    const valido = validarAssinaturaWebhook({
+      xSignature: `ts=${TS},v1=${v1}`,
+      xRequestId: REQUEST_ID,
+      dataId: DATA_ID,
+      secret: SECRET,
+      agora,
+    });
+
+    // Assert
+    expect(valido).toBe(false);
   });
 
   it("falha quando o secret está errado", () => {

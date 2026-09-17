@@ -67,6 +67,23 @@ interface ValidarAssinaturaInput {
    * Passar explicitamente mantém a função pura/testável.
    */
   secret?: string;
+  /** Instante de referência para a janela do `ts` (default: agora). Testável. */
+  agora?: Date;
+}
+
+/**
+ * Janela aceita entre o `ts` assinado e o recebimento. Fora dela a assinatura
+ * é recusada mesmo que o HMAC confira — barra replays de notificações antigas
+ * (idempotência por `x-request-id` cobre o resto).
+ */
+export const TOLERANCIA_TS_MS = 5 * 60 * 1000;
+
+/** `ts` do MP em ms. Aceita segundos (10 dígitos) ou milissegundos; `null` se inválido. */
+function tsParaMs(ts: string): number | null {
+  if (!/^\d+$/.test(ts)) return null;
+  const n = Number(ts);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n < 1e11 ? n * 1000 : n;
 }
 
 interface CriarCobrancaPixInput {
@@ -139,6 +156,7 @@ export function extrairCamposAssinatura(
  *
  * Monta o manifest `id:<dataId>;request-id:<xRequestId>;ts:<ts>;`, calcula o
  * HMAC com o secret e compara (timing-safe) com o `v1` do header `x-signature`.
+ * Antes disso, exige que o `ts` esteja dentro de `TOLERANCIA_TS_MS` de `agora`.
  *
  * PURA e testável: o secret pode ser passado por parâmetro; só cai para
  * `serverEnv()` quando omitido. Retorna `false` para qualquer entrada
@@ -151,6 +169,11 @@ export function validarAssinaturaWebhook(input: ValidarAssinaturaInput): boolean
   if (!ts || !v1 || !xRequestId || !dataId) {
     return false;
   }
+
+  const tsMs = tsParaMs(ts);
+  if (tsMs === null) return false;
+  const agora = input.agora ?? new Date();
+  if (Math.abs(agora.getTime() - tsMs) > TOLERANCIA_TS_MS) return false;
 
   const secret = input.secret ?? serverEnv().MP_WEBHOOK_SECRET;
   if (!secret) return false;
