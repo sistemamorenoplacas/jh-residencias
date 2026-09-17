@@ -25,7 +25,7 @@ import "server-only";
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { serverEnv } from "@/lib/env";
+import { cronSecret, serverEnv } from "@/lib/env";
 import { createServiceClient } from "@/lib/supabase/server";
 import type { DbCharge, DbLease, WhatsappStatusDb } from "@/lib/db-types";
 import {
@@ -87,7 +87,7 @@ function autorizado(request: NextRequest): boolean {
   }
   const token = header.slice(prefix.length);
   const tokenBuf = Buffer.from(token);
-  const secretBuf = Buffer.from(serverEnv().CRON_SECRET);
+  const secretBuf = Buffer.from(cronSecret());
   if (tokenBuf.length !== secretBuf.length) {
     return false;
   }
@@ -233,6 +233,13 @@ async function processarCharge(
 export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!autorizado(request)) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  try {
+    serverEnv();
+  } catch (error: unknown) {
+    console.error("[cron/gerar-cobrancas] ambiente inválido:", mensagemErro(error));
+    return NextResponse.json({ error: "configuração do servidor inválida" }, { status: 500 });
   }
 
   const resultado: ResultadoCron = { geradas: 0, enviadas: 0, erros: [] };

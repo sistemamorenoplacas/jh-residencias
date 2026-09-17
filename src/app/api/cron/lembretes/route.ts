@@ -25,7 +25,7 @@ import "server-only";
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { serverEnv } from "@/lib/env";
+import { cronSecret, serverEnv } from "@/lib/env";
 import { createServiceClient } from "@/lib/supabase/server";
 import { lembreteVencimento } from "@/lib/whatsapp";
 import {
@@ -181,17 +181,17 @@ async function processarLembrete(lembrete: ChargeLembrete): Promise<void> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  let env;
-  try {
-    env = serverEnv();
-  } catch (error: unknown) {
-    const motivo =
-      error instanceof Error ? error.message : "configuração inválida";
-    return NextResponse.json({ error: motivo }, { status: 500 });
+  // Autentica ANTES de validar o resto do ambiente: um anônimo recebe 401 e
+  // nunca a lista de variáveis ausentes.
+  if (!autorizado(request, cronSecret())) {
+    return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   }
 
-  if (!autorizado(request, env.CRON_SECRET)) {
-    return NextResponse.json({ error: "não autorizado" }, { status: 401 });
+  try {
+    serverEnv();
+  } catch (error: unknown) {
+    console.error("[cron/lembretes] ambiente inválido:", error instanceof Error ? error.message : error);
+    return NextResponse.json({ error: "configuração do servidor inválida" }, { status: 500 });
   }
 
   const hoje = new Date();

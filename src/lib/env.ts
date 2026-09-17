@@ -99,6 +99,21 @@ export function supabaseServiceRoleKey(): string {
 }
 
 /**
+ * Apenas o `CRON_SECRET`, validado isoladamente: a autenticação dos crons
+ * precisa funcionar (e responder 401) mesmo que outra secret esteja ausente —
+ * e nunca deve revelar, a um chamador anônimo, quais variáveis faltam.
+ */
+export function cronSecret(): string {
+  const parsed = z
+    .object({ CRON_SECRET: z.string().min(1) })
+    .safeParse({ CRON_SECRET: process.env.CRON_SECRET });
+  if (!parsed.success) {
+    throw new Error(`Variável de ambiente inválida/ausente: ${formatIssues(parsed.error)}`);
+  }
+  return parsed.data.CRON_SECRET;
+}
+
+/**
  * Variáveis públicas (expostas ao client via prefixo NEXT_PUBLIC_).
  * Resultado é memoizado após a 1ª chamada.
  */
