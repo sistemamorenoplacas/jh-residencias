@@ -83,7 +83,7 @@ export function FotoUpload({ id, name, fotoAtual, nomeImovel }: FotoUploadProps)
         id={id}
         name={name}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="sr-only"
         onChange={onChange}
       />

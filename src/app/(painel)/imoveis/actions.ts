@@ -13,6 +13,36 @@ import type { PropertyTipoDb } from "@/lib/db-types";
 const FOTO_BUCKET = "imoveis";
 const FOTO_MAX_BYTES = 8 * 1024 * 1024; // 8 MB
 
+/**
+ * Tipos aceitos → extensão gravada. O bucket é público, então nunca subimos o
+ * que o navegador declarou sem conferir: SVG (pode carregar script) e qualquer
+ * outro formato ficam de fora, e a extensão vem daqui, não do nome do arquivo.
+ */
+const FOTO_TIPOS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+/** Confere os primeiros bytes (magic number) contra o tipo declarado. */
+async function conteudoBateComTipo(file: File, tipo: string): Promise<boolean> {
+  const b = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  if (b.length < 12) return false;
+  switch (tipo) {
+    case "image/jpeg":
+      return b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
+    case "image/png":
+      return b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47;
+    case "image/webp":
+      return (
+        String.fromCharCode(b[0], b[1], b[2], b[3]) === "RIFF" &&
+        String.fromCharCode(b[8], b[9], b[10], b[11]) === "WEBP"
+      );
+    default:
+      return false;
+  }
+}
+
 /** Resultado do upload: `url` quando enviou, `erro` quando o arquivo é inválido. */
 interface UploadFotoResult {
   url: string | null;
@@ -32,14 +62,17 @@ async function uploadFotoImovel(
   if (!(file instanceof File) || file.size === 0) {
     return { url: null, erro: null };
   }
-  if (!file.type.startsWith("image/")) {
-    return { url: null, erro: "O arquivo enviado não é uma imagem." };
+  const ext = FOTO_TIPOS[file.type];
+  if (!ext) {
+    return { url: null, erro: "Envie uma foto JPG, PNG ou WebP." };
   }
   if (file.size > FOTO_MAX_BYTES) {
     return { url: null, erro: "A foto é muito grande (máx. 8 MB)." };
   }
+  if (!(await conteudoBateComTipo(file, file.type))) {
+    return { url: null, erro: "O arquivo não é uma imagem válida (JPG, PNG ou WebP)." };
+  }
 
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
   const path = `${ownerId}/${crypto.randomUUID()}.${ext}`;
 
   const supabase = createServiceClient();
