@@ -47,7 +47,11 @@ async function buscarCharge(id: string): Promise<ChargeBoletoPublica | null> {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: "Pagar aluguel via boleto — JH Residências" };
+  // Link pessoal do inquilino: nunca deve entrar em buscadores.
+  return {
+    title: "Pagar aluguel via boleto — JH Residências",
+    robots: { index: false, follow: false },
+  };
 }
 
 function primeiroNome(nome: string | undefined | null): string {

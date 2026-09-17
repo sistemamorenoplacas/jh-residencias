@@ -8,8 +8,9 @@ import type { NextConfig } from "next";
  * `dangerouslySetInnerHTML`/`innerHTML`/`eval` e o React já escapa a saída,
  * então o `'unsafe-inline'` em `script-src` tem superfície de XSS reduzida.
  *
- * `connect-src` usa wildcard `*.supabase.co` (REST + Realtime via wss) para
- * funcionar em qualquer ambiente sem hardcodar o host do projeto. Em
+ * `connect-src` e `img-src` usam wildcard `*.supabase.co` (REST + Realtime via
+ * wss; fotos do Storage) para funcionar em qualquer ambiente sem hardcodar o
+ * host do projeto — nenhuma outra origem externa serve imagens ao app. Em
  * desenvolvimento, liberamos `'unsafe-eval'` e `ws:` para o HMR/Turbopack.
  */
 
@@ -36,7 +37,7 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src ${scriptSrc}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
+  "img-src 'self' data: blob: https://*.supabase.co",
   "font-src 'self'",
   `connect-src ${connectSrc}`,
   "frame-src 'none'",

@@ -49,7 +49,11 @@ async function buscarCharge(id: string): Promise<ChargePublica | null> {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: "Pagar aluguel via Pix — JH Residências" };
+  // Link pessoal do inquilino: nunca deve entrar em buscadores.
+  return {
+    title: "Pagar aluguel via Pix — JH Residências",
+    robots: { index: false, follow: false },
+  };
 }
 
 /** Primeiro nome, para uma saudação amigável. */
