@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { requireUser } from "@/lib/auth";
+import { requireUser, type SessionUser } from "@/lib/auth";
 import { resolveBaseUrl } from "@/lib/base-url";
 import {
   mensagemConvite,
@@ -18,7 +18,8 @@ import { createServiceClient } from "@/lib/supabase/server";
  *
  * Tudo aqui roda com service role porque cria/remove usuários no Auth e grava
  * em `account_members` (sem policies de escrita). A autorização é: quem chama
- * tem sessão E o alvo pertence à mesma conta (`owner_id = user.ownerId`).
+ * tem sessão, É O PROPRIETÁRIO da conta (membros convidados só veem a lista)
+ * e o alvo pertence à mesma conta (`owner_id = user.ownerId`).
  *
  * O convite é um link de uso único gerado por `auth.admin.generateLink` —
  * não depende de e-mail: o link vai por WhatsApp e o convidado cria a senha
@@ -33,6 +34,13 @@ export interface ConviteState {
 }
 
 export const CONVITE_INITIAL_STATE: ConviteState = { ok: false, error: null, convite: null };
+
+const ERRO_SO_PROPRIETARIO = "Apenas o proprietário da conta pode gerenciar administradores.";
+
+/** Só o proprietário convida/remove; um convidado não pode escalar nem derrubar os outros. */
+function souProprietario(user: SessionUser): boolean {
+  return user.id === user.ownerId;
+}
 
 const novoAdminSchema = z.object({
   nome: z.string().trim().min(2, "Informe o nome.").max(80),
@@ -71,6 +79,9 @@ export async function convidarAdministrador(
   formData: FormData,
 ): Promise<ConviteState> {
   const user = await requireUser();
+  if (!souProprietario(user)) {
+    return { ok: false, error: ERRO_SO_PROPRIETARIO, convite: null };
+  }
   const parsed = novoAdminSchema.safeParse({
     nome: formData.get("nome"),
     email: formData.get("email"),
@@ -125,6 +136,9 @@ export async function convidarAdministrador(
 /** Gera um novo link (o anterior expira/é de uso único) para um convite pendente. */
 export async function gerarLinkConvite(userId: string): Promise<ConviteState> {
   const user = await requireUser();
+  if (!souProprietario(user)) {
+    return { ok: false, error: ERRO_SO_PROPRIETARIO, convite: null };
+  }
   const service = createServiceClient();
   const { data: membro } = await service
     .from("account_members")
@@ -147,6 +161,7 @@ export async function gerarLinkConvite(userId: string): Promise<ConviteState> {
 /** Remove um administrador (usuário do Auth + vínculo). Nunca o proprietário nem a si mesmo. */
 export async function removerAdministrador(userId: string): Promise<{ ok: boolean; error: string | null }> {
   const user = await requireUser();
+  if (!souProprietario(user)) return { ok: false, error: ERRO_SO_PROPRIETARIO };
   if (userId === user.ownerId) return { ok: false, error: "O proprietário não pode ser removido." };
   if (userId === user.id) return { ok: false, error: "Você não pode remover a si mesmo." };
 

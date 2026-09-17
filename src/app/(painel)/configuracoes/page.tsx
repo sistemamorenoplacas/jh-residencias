@@ -25,7 +25,7 @@ export default async function ConfiguracoesPage() {
 
         {/* Administradores adicionais + convite por WhatsApp */}
         {admins ? (
-          <AdminsSection admins={admins} />
+          <AdminsSection admins={admins} podeGerenciar={user.id === user.ownerId} />
         ) : (
           <section className="rounded-card border border-line bg-surface px-5 py-4">
             <h2 className="text-base font-semibold tracking-tight text-ink">Administradores</h2>

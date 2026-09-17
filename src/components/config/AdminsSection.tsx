@@ -76,7 +76,8 @@ function StatusAdmin({ admin }: { admin: AdminInfo }) {
   );
 }
 
-export function AdminsSection({ admins }: { admins: AdminInfo[] }) {
+/** `podeGerenciar`: só o proprietário convida/remove; membros veem a lista. */
+export function AdminsSection({ admins, podeGerenciar }: { admins: AdminInfo[]; podeGerenciar: boolean }) {
   const [state, formAction, pending] = useActionState(convidarAdministrador, CONVITE_INITIAL_STATE);
   const [linkState, setLinkState] = useState<ConviteState | null>(null);
   const [erroLista, setErroLista] = useState<string | null>(null);
@@ -127,7 +128,7 @@ export function AdminsSection({ admins }: { admins: AdminInfo[] }) {
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <StatusAdmin admin={admin} />
-              {!admin.principal && !admin.ativo ? (
+              {podeGerenciar && !admin.principal && !admin.ativo ? (
                 <button
                   type="button"
                   disabled={ocupado}
@@ -137,7 +138,7 @@ export function AdminsSection({ admins }: { admins: AdminInfo[] }) {
                   Gerar link
                 </button>
               ) : null}
-              {!admin.principal && !admin.euMesmo ? (
+              {podeGerenciar && !admin.principal && !admin.euMesmo ? (
                 <button
                   type="button"
                   disabled={ocupado}
@@ -158,6 +159,7 @@ export function AdminsSection({ admins }: { admins: AdminInfo[] }) {
         </p>
       ) : null}
 
+      {podeGerenciar ? (
       <div className="border-t border-line px-5 py-4">
         {convite ? (
           <div className="mb-4">
@@ -196,6 +198,11 @@ export function AdminsSection({ admins }: { admins: AdminInfo[] }) {
           </div>
         </form>
       </div>
+      ) : (
+        <p className="border-t border-line px-5 py-3 text-xs text-faint">
+          Só o proprietário da conta pode convidar ou remover administradores.
+        </p>
+      )}
     </section>
   );
 }
