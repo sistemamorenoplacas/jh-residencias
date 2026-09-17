@@ -65,6 +65,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Não anunciar o framework no header `X-Powered-By`.
+  poweredByHeader: false,
   async headers() {
     return [
       {
