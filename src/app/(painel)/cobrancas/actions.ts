@@ -265,10 +265,10 @@ export async function gerarCobrancaAvulsa(
   }
 
   try {
-    const { lease, tenant } = await carregarLeaseComTenant(user.id, leaseId);
+    const { lease, tenant } = await carregarLeaseComTenant(user.ownerId, leaseId);
 
     const [plan] = planejarCobrancasDoMes([lease], competencia);
-    const charge = await garantirCharge(plan, user.id);
+    const charge = await garantirCharge(plan, user.ownerId);
 
     if (charge.status === "cancelado") {
       return {
@@ -336,7 +336,7 @@ export async function reenviarCobranca(
 
   try {
     const { charge, tenant } = await carregarChargeComContexto(
-      user.id,
+      user.ownerId,
       chargeId,
     );
 
@@ -379,7 +379,7 @@ export async function cancelarCobranca(
       .from("charges")
       .update({ status: "cancelado" })
       .eq("id", chargeId)
-      .eq("owner_id", user.id)
+      .eq("owner_id", user.ownerId)
       .neq("status", "pago")
       .select("*");
 
@@ -414,7 +414,7 @@ export async function marcarPagoManualmente(
       .from("charges")
       .update({ status: "pago", pago_em: new Date().toISOString() })
       .eq("id", chargeId)
-      .eq("owner_id", user.id)
+      .eq("owner_id", user.ownerId)
       .in("status", ["pendente", "vencido"])
       .select("*");
 
@@ -453,7 +453,7 @@ export async function gerarCobrancasDoMes(): Promise<GerarLoteState> {
   const { data: leases, error } = await supabase
     .from("leases")
     .select("id")
-    .eq("owner_id", user.id)
+    .eq("owner_id", user.ownerId)
     .eq("ativo", true);
 
   if (error) {
@@ -537,7 +537,7 @@ export async function verificarPagamentoCharge(
 
   try {
     const { charge, tenant } = await carregarChargeComContexto(
-      user.id,
+      user.ownerId,
       chargeId,
     );
 

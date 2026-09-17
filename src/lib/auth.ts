@@ -5,11 +5,15 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 
 /**
- * Helpers de autenticação do admin (uso próprio do proprietário).
+ * Helpers de autenticação do painel.
  *
- * A app tem um único usuário (o dono). Não há papéis nem multi-tenant: a
- * autorização é simplesmente "tem sessão Supabase válida". RLS no banco
- * garante o escopo por `owner_id = auth.uid()`.
+ * Uma "conta" tem um proprietário (o `owner_id` de todos os registros) e pode
+ * ter administradores adicionais (`account_members`, migration 0007). Todos os
+ * administradores enxergam e operam os mesmos dados: o RLS compara `owner_id`
+ * com `public.current_owner_id()`, e o app grava `owner_id = user.ownerId`.
+ *
+ * `ownerId` vem do claim `app_metadata.owner_id` (gravado ao convidar o
+ * administrador); para o proprietário, é o próprio `id`.
  *
  * Server-only: nunca importe a partir de um arquivo `'use client'`.
  */
@@ -17,6 +21,10 @@ import { createServerClient } from "@/lib/supabase/server";
 export interface SessionUser {
   id: string;
   email: string | null;
+  /** Nome exibido (user_metadata.full_name), se cadastrado. */
+  nome: string | null;
+  /** `owner_id` dos dados que este usuário enxerga (ele mesmo ou o proprietário da conta). */
+  ownerId: string;
 }
 
 /**
@@ -34,7 +42,15 @@ export async function getSession(): Promise<SessionUser | null> {
     return null;
   }
 
-  return { id: data.user.id, email: data.user.email ?? null };
+  const claimOwner = data.user.app_metadata?.owner_id;
+  const fullName = data.user.user_metadata?.full_name;
+
+  return {
+    id: data.user.id,
+    email: data.user.email ?? null,
+    nome: typeof fullName === "string" && fullName.trim() ? fullName : null,
+    ownerId: typeof claimOwner === "string" && claimOwner ? claimOwner : data.user.id,
+  };
 }
 
 /**

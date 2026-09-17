@@ -135,14 +135,14 @@ export async function criarImovel(
     return { error: parsed.error };
   }
 
-  const foto = await uploadFotoImovel(formData, user.id);
+  const foto = await uploadFotoImovel(formData, user.ownerId);
   if (foto.erro) {
     return { error: foto.erro };
   }
 
   const supabase = await createServerClient();
   const { error } = await supabase.from("properties").insert({
-    owner_id: user.id,
+    owner_id: user.ownerId,
     nome: parsed.data.nome,
     endereco: parsed.data.endereco,
     tipo: parsed.data.tipo,
@@ -178,7 +178,7 @@ export async function editarImovel(
   }
 
   // Só troca a foto quando um novo arquivo é enviado; senão mantém a atual.
-  const foto = await uploadFotoImovel(formData, user.id);
+  const foto = await uploadFotoImovel(formData, user.ownerId);
   if (foto.erro) {
     return { error: foto.erro };
   }

@@ -133,7 +133,7 @@ export async function criarInquilino(
 
   const supabase = await createServerClient();
   const { error } = await supabase.from("tenants").insert({
-    owner_id: user.id,
+    owner_id: user.ownerId,
     nome: parsed.data.nome,
     telefone: parsed.data.telefone,
     email: parsed.data.email,

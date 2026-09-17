@@ -103,9 +103,9 @@ async function readLeaseForm(formData: FormData): Promise<ParsedLease> {
   const valorCentavos = parseValorCentavos(formData.get("valor"));
 
   return {
-    ownerId: user.id,
+    ownerId: user.ownerId,
     payload: {
-      owner_id: user.id,
+      owner_id: user.ownerId,
       property_id: parsed.data.propertyId,
       tenant_id: parsed.data.tenantId,
       valor_centavos: valorCentavos,
@@ -198,7 +198,7 @@ export async function alternarAtivoContrato(formData: FormData): Promise<void> {
     .from("leases")
     .update({ ativo: !ativo })
     .eq("id", id)
-    .eq("owner_id", user.id);
+    .eq("owner_id", user.ownerId);
 
   revalidatePath("/contratos");
 }
@@ -221,7 +221,7 @@ export async function excluirContrato(formData: FormData): Promise<void> {
     .from("leases")
     .delete()
     .eq("id", id)
-    .eq("owner_id", user.id)
+    .eq("owner_id", user.ownerId)
     .eq("ativo", false);
 
   revalidatePath("/contratos");

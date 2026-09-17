@@ -63,7 +63,7 @@ export async function salvarConfiguracoes(
   const supabase = await createServerClient();
   const { error } = await supabase.from("settings").upsert(
     {
-      owner_id: user.id,
+      owner_id: user.ownerId,
       suporte_whatsapp: parsed.data.suporteWhatsapp || null,
       suporte_email: parsed.data.suporteEmail || null,
       cobranca_automatica: parsed.data.cobrancaAutomatica,

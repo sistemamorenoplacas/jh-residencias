@@ -17,7 +17,7 @@ function SubmitButton() {
       disabled={pending}
       className="mt-1 inline-flex w-full items-center justify-center rounded-pill bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-70"
     >
-      {pending ? "Salvando…" : "Redefinir senha"}
+      {pending ? "Salvando…" : "Salvar senha"}
     </button>
   );
 }
@@ -46,7 +46,7 @@ export default function NovaSenhaPage() {
       <div className="w-full max-w-[380px]">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <img src="/logo.svg" alt="JH Residências" className="h-20 w-auto" />
-          <p className="mt-0.5 text-sm text-muted">Redefinir senha</p>
+          <p className="mt-0.5 text-sm text-muted">Definir senha</p>
         </div>
 
         <div className="card-surface p-6">
@@ -58,26 +58,26 @@ export default function NovaSenhaPage() {
                 </svg>
               </span>
               <div>
-                <p className="font-semibold text-ink">Senha redefinida com sucesso!</p>
+                <p className="font-semibold text-ink">Senha salva com sucesso!</p>
                 <p className="mt-1 text-sm text-muted">
-                  Já pode entrar com a nova senha.
+                  Você já está conectado(a). Da próxima vez, entre com e-mail e senha.
                 </p>
               </div>
               <Link
-                href="/login"
-                className="text-sm font-medium text-brand hover:text-brand-dark"
+                href="/painel"
+                className="inline-flex items-center justify-center rounded-pill bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark"
               >
-                Ir para o login
+                Ir para o painel
               </Link>
             </div>
           ) : (
             <form action={formAction} className="flex flex-col gap-4" noValidate>
               <div>
                 <p className="mb-4 text-sm text-muted">
-                  Escolha uma nova senha para sua conta.
+                  Escolha a senha de acesso da sua conta.
                 </p>
                 <label htmlFor="senha" className="label">
-                  Nova senha
+                  Senha
                 </label>
                 <div className="relative">
                   <input
@@ -103,7 +103,7 @@ export default function NovaSenhaPage() {
 
               <div>
                 <label htmlFor="confirmar" className="label">
-                  Confirmar nova senha
+                  Confirmar senha
                 </label>
                 <div className="relative">
                   <input

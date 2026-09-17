@@ -10,7 +10,7 @@ import { publicEnv } from "@/lib/env";
  * - `response`: o NextResponse com os cookies de sessão atualizados.
  * - `user`: o usuário autenticado (ou null) para o guard decidir redirecionar.
  *
- * Chamado pelo `middleware.ts` da raiz. NUNCA rode lógica entre `createServerClient`
+ * Chamado pelo `src/proxy.ts`. NUNCA rode lógica entre `createServerClient`
  * e `getUser()` — pode dessincronizar a sessão.
  */
 export async function updateSession(request: NextRequest): Promise<{

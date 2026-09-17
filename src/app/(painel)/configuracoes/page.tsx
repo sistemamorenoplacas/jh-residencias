@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/shell/AppShell";
 import { GerarCobrancasButton } from "@/components/config/GerarCobrancasButton";
 import { ConfigForm } from "@/components/config/ConfigForm";
+import { AdminsSection } from "@/components/config/AdminsSection";
+import { listarAdministradores } from "@/lib/admins";
 import { requireUser } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 
@@ -39,7 +41,10 @@ function StatusPill({ ok }: { ok: boolean }) {
 
 export default async function ConfiguracoesPage() {
   const user = await requireUser();
-  const settings = await getSettings(user.id);
+  const [settings, admins] = await Promise.all([
+    getSettings(user.ownerId),
+    listarAdministradores(user).catch(() => null),
+  ]);
 
   const conexoes: Conexao[] = [
     {
@@ -64,6 +69,18 @@ export default async function ConfiguracoesPage() {
       <div className="flex flex-col gap-6">
         {/* Formulário editável: automação + contato de suporte */}
         <ConfigForm settings={settings} />
+
+        {/* Administradores adicionais + convite por WhatsApp */}
+        {admins ? (
+          <AdminsSection admins={admins} />
+        ) : (
+          <section className="rounded-card border border-line bg-surface px-5 py-4">
+            <h2 className="text-base font-semibold tracking-tight text-ink">Administradores</h2>
+            <p className="mt-1 text-sm text-vencido">
+              Não foi possível carregar os administradores. Verifique se a migração 0007 foi aplicada.
+            </p>
+          </section>
+        )}
 
         {/* Ação manual: gerar cobranças do mês agora */}
         <section className="overflow-hidden rounded-card border border-line bg-surface">

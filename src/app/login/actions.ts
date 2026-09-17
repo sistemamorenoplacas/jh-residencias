@@ -1,10 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { z } from "zod";
 
 import { createServerClient } from "@/lib/supabase/server";
+import { resolveBaseUrl } from "@/lib/base-url";
 
 /**
  * Server Actions de autenticação.
@@ -103,27 +103,6 @@ export async function resetPassword(
   });
 
   return { ok: true, error: null };
-}
-
-/**
- * Resolve a URL base do app para montar links de redirect (ex.: e-mail de
- * recuperação de senha). Deriva do header `origin`/`host` da própria
- * requisição (robusto em qualquer ambiente: local, preview, produção), com
- * fallback para `APP_BASE_URL` quando o header não estiver disponível.
- */
-async function resolveBaseUrl(): Promise<string> {
-  const headerList = await headers();
-
-  const origin = headerList.get("origin");
-  if (origin) return origin;
-
-  const host = headerList.get("host");
-  if (host) {
-    const protocol = headerList.get("x-forwarded-proto") ?? "https";
-    return `${protocol}://${host}`;
-  }
-
-  return process.env.APP_BASE_URL ?? "";
 }
 
 export interface NovaSenhaState {
