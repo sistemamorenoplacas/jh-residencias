@@ -39,7 +39,7 @@ import {
   type PayerBoleto,
 } from "@/lib/mercadopago";
 import { cobrancaAluguel, pagamentoConfirmado } from "@/lib/whatsapp";
-import { formatAmount } from "@/lib/money";
+import { formatAmount, formatBRL } from "@/lib/money";
 import { formatCompetencia, formatData } from "@/lib/dates";
 
 /** Resultado uniforme das actions, consumível por formulários/handlers client. */
@@ -529,7 +529,8 @@ async function notificarPagamentoConfirmado(
     to: tenant.telefone,
     nome: tenant.nome,
     competencia: formatCompetencia(charge.competencia),
-    valor: formatAmount(charge.valor_centavos),
+    // Com `R$`: o template `pagamento_confirmado` traz só `{{3}}` (igual ao webhook).
+    valor: formatBRL(charge.valor_centavos),
   });
 
   const supabase = createServiceClient();
