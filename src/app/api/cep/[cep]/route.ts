@@ -1,13 +1,21 @@
 import { NextResponse } from "next/server";
 
+import { getSession } from "@/lib/auth";
 import { mapearRespostaCep, somenteDigitosCep } from "@/lib/cep";
 
 /**
  * GET /api/cep/01001000 — consulta o CEP no ViaCEP (com BrasilAPI como
  * reserva) e devolve `{ logradouro, bairro, cidade, uf }`. Feito no servidor
  * para não abrir a CSP do painel a domínios externos. Cache de 1 dia.
+ *
+ * Só o painel usa (cadastro de imóvel), então exige sessão: sem isso a rota
+ * seria um proxy aberto consumindo a cota das APIs de CEP e compute.
  */
 export async function GET(_request: Request, ctx: { params: Promise<{ cep: string }> }) {
+  if (!(await getSession())) {
+    return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+  }
+
   const { cep } = await ctx.params;
   const digitos = somenteDigitosCep(cep);
   if (digitos.length !== 8) {
