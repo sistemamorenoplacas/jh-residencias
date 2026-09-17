@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { getSession } from "@/lib/auth";
+import { VertixCredit } from "@/components/ui/VertixCredit";
 
 import { LoginForm } from "./LoginForm";
 
@@ -81,8 +82,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
 
         <p className="mt-6 text-center text-xs text-white/40">
-          Acesso restrito ao proprietário.
+          Acesso restrito aos administradores.
         </p>
+        <VertixCredit tone="dark" className="pt-3" />
       </div>
     </main>
   );

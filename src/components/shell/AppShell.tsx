@@ -45,10 +45,7 @@ export async function AppShell({ title, subtitle, actions, children, variant = "
         )}
       </main>
       <footer className="estate-footer">
-        <span>
-          JH Residências <i /> Cuidar do seu patrimônio começa por aqui.
-        </span>
-        <VertixCredit />
+        <VertixCredit className="py-5" />
       </footer>
       <MobileNav />
     </div>

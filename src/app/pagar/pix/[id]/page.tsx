@@ -122,7 +122,7 @@ export default async function PagarPixPage({
         <p className="mt-6 text-center text-xs text-[var(--color-faint)]">
           Pagamento processado com segurança via Mercado Pago.
         </p>
-        <VertixCredit className="mt-2 block text-center text-xs text-[var(--color-faint)] hover:underline" />
+        <VertixCredit className="pt-3" />
       </div>
     </main>
   );

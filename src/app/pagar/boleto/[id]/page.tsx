@@ -107,7 +107,7 @@ export default async function PagarBoletoPage({
           <IconLock className="size-3.5" />
           Pagamento processado com segurança via Mercado Pago.
         </p>
-        <VertixCredit className="mt-2 block text-center text-xs text-[var(--color-faint)] hover:underline" />
+        <VertixCredit className="pt-3" />
       </div>
     </main>
   );

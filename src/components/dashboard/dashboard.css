@@ -944,25 +944,8 @@
 }
 .estate-footer {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px 12px;
-  padding: 24px 6px;
-  font-size: 9px;
-  color: var(--color-muted);
-}
-.estate-footer span {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.estate-footer i {
-  display: inline-block;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--color-faint);
+  justify-content: center;
+  padding: 8px 0 0;
 }
 @media (min-width: 1600px) {
   .estate-hero {
@@ -1388,13 +1371,6 @@
     width: 140px;
     height: 140px;
   }
-  .estate-footer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    padding: 20px 4px 8px;
-    font-size: 9px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .estate-shell *,
@@ -1474,19 +1450,6 @@
   .estate-page-body {
     padding-bottom: 16px;
   }
-}
-
-/* Crédito Vertix (rodapé do painel; nas páginas de pagamento recebe classes utilitárias). */
-.vertix-credit {
-  color: inherit;
-  white-space: nowrap;
-}
-.vertix-credit strong {
-  font-weight: 600;
-  color: var(--color-brand-dark);
-}
-.vertix-credit:hover {
-  text-decoration: underline;
 }
 
 /* Barra inferior flutuante (MobileNav) — abaixo de 1024px. */
