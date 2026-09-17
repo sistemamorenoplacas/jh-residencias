@@ -944,9 +944,10 @@
 }
 .estate-footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 8px 12px;
   padding: 24px 6px;
   font-size: 9px;
   color: var(--color-muted);
@@ -1332,4 +1333,17 @@
   .estate-page-body {
     padding-bottom: 16px;
   }
+}
+
+/* Crédito Vertix (rodapé do painel; nas páginas de pagamento recebe classes utilitárias). */
+.vertix-credit {
+  color: inherit;
+  white-space: nowrap;
+}
+.vertix-credit strong {
+  font-weight: 600;
+  color: var(--color-brand-dark);
+}
+.vertix-credit:hover {
+  text-decoration: underline;
 }

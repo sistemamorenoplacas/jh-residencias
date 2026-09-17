@@ -6,6 +6,7 @@ import { formatBRL } from "@/lib/money";
 import { formatCompetencia, formatData } from "@/lib/dates";
 import type { ChargeStatusDb } from "@/lib/db-types";
 import { getSettings } from "@/lib/settings";
+import { VertixCredit } from "@/components/ui/VertixCredit";
 import { CopyPixButton } from "../../pix/[id]/CopyPixButton";
 
 // Status pode mudar (pago via webhook) — nunca cachear a página.
@@ -106,6 +107,7 @@ export default async function PagarBoletoPage({
           <IconLock className="size-3.5" />
           Pagamento processado com segurança via Mercado Pago.
         </p>
+        <VertixCredit className="mt-2 block text-center text-xs text-[var(--color-faint)] hover:underline" />
       </div>
     </main>
   );

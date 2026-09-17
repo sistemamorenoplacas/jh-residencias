@@ -420,12 +420,6 @@ export function DashboardView({
           </Link>
         </section>
       </div>
-      <footer className="estate-footer">
-        <span>
-          JH Residências <i /> Cuidar do seu patrimônio começa por aqui.
-        </span>
-        <span>Gestão simples. Mais tranquilidade.</span>
-      </footer>
     </>
   );
 }

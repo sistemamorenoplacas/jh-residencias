@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { MobileNav } from "./MobileNav";
 import { DashboardNav } from "./DashboardNav";
 import { getSession } from "@/lib/auth";
+import { VertixCredit } from "@/components/ui/VertixCredit";
 import "@/components/dashboard/dashboard.css";
 
 interface AppShellProps {
@@ -43,6 +44,12 @@ export async function AppShell({ title, subtitle, actions, children, variant = "
           </>
         )}
       </main>
+      <footer className="estate-footer">
+        <span>
+          JH Residências <i /> Cuidar do seu patrimônio começa por aqui.
+        </span>
+        <VertixCredit />
+      </footer>
       <MobileNav />
     </div>
   );
