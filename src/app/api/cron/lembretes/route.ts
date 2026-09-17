@@ -1,7 +1,8 @@
 import "server-only";
 
 /**
- * Cron de lembretes (Fluxo C). POST protegido por `Bearer CRON_SECRET`.
+ * Cron de lembretes (Fluxo C). GET/POST protegidos por `Bearer CRON_SECRET`
+ * (o Vercel Cron chama com GET).
  *
  * Passos:
  *   1) `marcarChargesVencidas(hoje)` — transiciona `pendente` -> `vencido` o que
@@ -262,3 +263,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json(resposta, { status: 200 });
 }
+
+// O Vercel Cron invoca o path com GET (e manda o mesmo `Authorization: Bearer
+// CRON_SECRET`); o disparo manual/externo continua por POST.
+export { POST as GET };

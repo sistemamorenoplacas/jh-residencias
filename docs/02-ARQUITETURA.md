@@ -43,8 +43,8 @@
 ### 3. Route handlers (API)
 - `POST /api/webhooks/mercadopago` — recebe notificação de pagamento, valida `x-signature`, idempotência por `event_id`, atualiza charge.
 - `GET/POST /api/webhooks/whatsapp` — `GET` verifica `hub.verify_token`; `POST` recebe status (sent/delivered/read/failed) e mensagens recebidas.
-- `POST /api/cron/gerar-cobrancas` — protegido por `CRON_SECRET`, gera cobranças do mês.
-- `POST /api/cron/lembretes` — protegido por `CRON_SECRET`, dispara lembretes D-3/D0/D+1/D+5.
+- `GET|POST /api/cron/gerar-cobrancas` — protegido por `CRON_SECRET`, gera cobranças do mês (o Vercel Cron chama com GET).
+- `GET|POST /api/cron/lembretes` — protegido por `CRON_SECRET`, dispara lembretes D-3/D0/D+1/D+5.
 
 ### 4. Jobs agendados (Vercel Cron)
 - `0 9 1 * *` → gera cobranças do mês (dia 1, 09:00).

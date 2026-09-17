@@ -1,8 +1,8 @@
 /**
  * Cron de geração mensal de cobranças (Fluxo A da arquitetura).
  *
- * `POST /api/cron/gerar-cobrancas` — protegido por `Authorization: Bearer
- * CRON_SECRET`. Acionado pelo Vercel Cron (`0 9 1 * *`).
+ * `GET|POST /api/cron/gerar-cobrancas` — protegido por `Authorization: Bearer
+ * CRON_SECRET`. Acionado pelo Vercel Cron (`0 9 1 * *`), que usa GET.
  *
  * Passos:
  *   1. competência do mês corrente;
@@ -301,3 +301,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json(resultado, { status: 200 });
 }
+
+// O Vercel Cron invoca o path com GET (e manda o mesmo `Authorization: Bearer
+// CRON_SECRET`); o disparo manual/externo continua por POST.
+export { POST as GET };
