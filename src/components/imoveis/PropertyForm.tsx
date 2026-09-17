@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 
 import type { DbProperty, PropertyTipoDb } from "@/lib/db-types";
 import { ModalPortal } from "@/components/ui/ModalPortal";
+import { FotoUpload } from "@/components/imoveis/FotoUpload";
 import {
   criarImovel,
   editarImovel,
@@ -80,7 +81,7 @@ export function PropertyForm({ mode, property, onClose }: PropertyFormProps) {
             </h2>
             <button
               type="button"
-              className="btn-ghost size-8 rounded-full p-0"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface text-ink transition-colors hover:bg-canvas"
               onClick={onClose}
               aria-label="Fechar"
             >
@@ -162,24 +163,15 @@ export function PropertyForm({ mode, property, onClose }: PropertyFormProps) {
               <label htmlFor={fotoId} className="label">
                 Foto do imóvel <span className="text-faint">(opcional)</span>
               </label>
-              {property?.foto_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={property.foto_url}
-                  alt={property.nome}
-                  className="mb-2 h-32 w-full rounded-xl object-cover"
-                />
-              ) : null}
-              <input
+              <FotoUpload
                 id={fotoId}
                 name="foto"
-                type="file"
-                accept="image/*"
-                className="field"
+                fotoAtual={property?.foto_url}
+                nomeImovel={property?.nome}
               />
-              {mode === "editar" ? (
+              {mode === "editar" && property?.foto_url ? (
                 <p className="mt-1 text-xs text-faint">
-                  Deixe em branco para manter a foto atual.
+                  Sem trocar, a foto atual é mantida.
                 </p>
               ) : null}
             </div>
