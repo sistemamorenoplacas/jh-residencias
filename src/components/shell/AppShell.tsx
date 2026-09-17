@@ -1,45 +1,48 @@
 import type { ReactNode } from "react";
-import { Sidebar } from "./Sidebar";
 import { MobileNav } from "./MobileNav";
+import { DashboardNav } from "./DashboardNav";
 import { getSession } from "@/lib/auth";
+import "@/components/dashboard/dashboard.css";
 
 interface AppShellProps {
   title: string;
   subtitle?: string;
   actions?: ReactNode;
   children: ReactNode;
+  /**
+   * `dashboard`: a página traz o próprio hero/h1 (Visão geral).
+   * `default`: o shell renderiza o cabeçalho da página (título, subtítulo, ações).
+   */
+  variant?: "default" | "dashboard";
 }
 
-export async function AppShell({ title, subtitle, actions, children }: AppShellProps) {
+/**
+ * Shell único do painel: header com logo + navegação em pílulas (DashboardNav),
+ * conteúdo centralizado (`.estate-main`) e barra inferior no celular (MobileNav).
+ * Os estilos vivem em `dashboard.css`, escopados em `.estate-shell`.
+ */
+export async function AppShell({ title, subtitle, actions, children, variant = "default" }: AppShellProps) {
   const user = await getSession();
 
   return (
-    <div className="flex min-h-dvh bg-canvas">
-      <Sidebar user={user ?? undefined} />
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b border-line-strong bg-surface/70 px-5 py-4 backdrop-blur lg:px-9 lg:py-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-4">
-              <img
-                src="/logo.svg"
-                alt="JH Residências"
-                className="h-20 w-auto shrink-0 lg:hidden"
-              />
+    <div className="estate-shell">
+      <DashboardNav user={user ?? undefined} />
+      <main className="estate-main" aria-label={title}>
+        {variant === "dashboard" ? (
+          children
+        ) : (
+          <>
+            <header className="estate-page-header">
               <div className="min-w-0">
-                {subtitle ? <p className="kicker mb-1.5">{subtitle}</p> : null}
-                <h1 className="serif text-[1.6rem] leading-tight text-ink lg:text-[2rem]">
-                  {title}
-                </h1>
+                <h1>{title}</h1>
+                {subtitle ? <p>{subtitle}</p> : null}
               </div>
-            </div>
-            {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
-          </div>
-        </header>
-
-        <main className="flex-1 px-5 py-7 pb-24 lg:px-9 lg:pb-9">{children}</main>
-      </div>
-
+              {actions ? <div className="estate-page-actions">{actions}</div> : null}
+            </header>
+            <div className="estate-page-body">{children}</div>
+          </>
+        )}
+      </main>
       <MobileNav />
     </div>
   );

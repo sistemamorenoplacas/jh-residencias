@@ -1,16 +1,11 @@
-"use client";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { ProfileMenu } from "./ProfileMenu";
-
-export interface SidebarUser {
+/** Usuário logado exibido no shell (header/menu de perfil). */
+export interface ShellUser {
   email: string | null;
 }
 
-interface NavItem {
+export interface NavItem {
   href: string;
   label: string;
   icon: ReactNode;
@@ -18,6 +13,7 @@ interface NavItem {
 
 const ICON = "size-[18px] shrink-0";
 
+/** Itens de navegação do painel, na ordem em que aparecem no header e na barra mobile. */
 export const NAV: NavItem[] = [
   {
     href: "/painel",
@@ -84,53 +80,7 @@ export const NAV: NavItem[] = [
   },
 ];
 
-function isActive(pathname: string, href: string): boolean {
+/** Rota ativa: a própria ou uma sub-rota (ex.: /cobrancas/123). */
+export function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-export function Sidebar({ user }: { user?: SidebarUser }) {
-  const pathname = usePathname();
-
-  return (
-    <aside className="sticky top-0 hidden h-dvh w-[236px] shrink-0 flex-col border-r border-line bg-sidebar px-4 py-6 lg:flex">
-      {/* Logo centralizada no topo (cabeçalho da marca) */}
-      <div className="mb-2 flex flex-col items-center">
-        <img src="/logo.svg" alt="JH Residências" className="h-40 w-auto max-w-full" />
-        <p className="-mt-8 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-faint">
-          Sistema de Gestão
-        </p>
-      </div>
-
-      <nav className="flex flex-1 flex-col gap-1">
-        {NAV.map((item) => {
-          const active = isActive(pathname, item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                active
-                  ? "bg-brand-tint text-brand ring-1 ring-brand/15"
-                  : "text-sidebar-text hover:bg-canvas hover:text-ink"
-              }`}
-            >
-              <span
-                className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${
-                  active ? "bg-brand text-white" : "text-faint"
-                }`}
-              >
-                {item.icon}
-              </span>
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="mb-3 h-px bg-line" />
-
-      {/* Perfil + botão sair no final do menu; configurações abrem em pop-up */}
-      <ProfileMenu user={user} />
-    </aside>
-  );
 }

@@ -60,15 +60,15 @@ export function ConfigForm({ settings }: ConfigFormProps) {
     CONFIG_FORM_INITIAL_STATE,
   );
 
-  // Some o "Salvo!" depois de alguns segundos.
-  const [showSaved, setShowSaved] = useState(false);
+  // Some o "Salvo!" depois de alguns segundos. Guarda qual resultado já foi
+  // dispensado (cada envio gera um `state` novo), sem setState síncrono no efeito.
+  const [dismissed, setDismissed] = useState<typeof state | null>(null);
   useEffect(() => {
-    if (state.saved) {
-      setShowSaved(true);
-      const t = setTimeout(() => setShowSaved(false), 3000);
-      return () => clearTimeout(t);
-    }
-  }, [state.saved]);
+    if (!state.saved) return;
+    const t = setTimeout(() => setDismissed(state), 3000);
+    return () => clearTimeout(t);
+  }, [state]);
+  const showSaved = state.saved && dismissed !== state;
 
   return (
     <form action={formAction} className="flex flex-col gap-6">

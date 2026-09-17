@@ -6,7 +6,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 
 import { signOut } from "@/app/login/actions";
-import { NAV } from "./Sidebar";
+import { NAV, isActive } from "./nav";
 
 const ICON = "size-[18px] shrink-0";
 
@@ -28,10 +28,6 @@ const IconLogout = (
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
   </svg>
 );
-
-function isActive(pathname: string, href: string): boolean {
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
 
 export function MobileNav() {
   const pathname = usePathname();

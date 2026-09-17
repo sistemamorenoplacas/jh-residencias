@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 
 import { signOut } from "@/app/login/actions";
 import { NomeForm, SenhaForm } from "@/app/(painel)/perfil/PerfilForm";
-import type { SidebarUser } from "./Sidebar";
+import type { ShellUser } from "./nav";
 
 const IconLogout = (
   <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -24,7 +24,7 @@ const IconClose = (
  * (editar nome + trocar senha) e mantém o botão "Sair" ao lado. O logout
  * usa a Server Action `signOut` via `<form action>`.
  */
-export function ProfileMenu({ user }: { user?: SidebarUser }) {
+export function ProfileMenu({ user, compact = false }: { user?: ShellUser; compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const email = user?.email ?? "Administrador";
   const inicial = user?.email?.[0]?.toUpperCase() ?? "A";
@@ -32,22 +32,23 @@ export function ProfileMenu({ user }: { user?: SidebarUser }) {
 
   return (
     <>
-      <div className="flex items-center gap-1 px-1.5 pb-6">
+      <div className={compact ? "flex items-center" : "flex items-center gap-1 px-1.5 pb-6"}>
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex flex-1 items-center gap-3 rounded-xl p-1 text-left transition-colors hover:bg-canvas"
+          aria-label="Abrir perfil"
+          className={compact ? "estate-avatar" : "flex flex-1 items-center gap-3 rounded-xl p-1 text-left transition-colors hover:bg-canvas"}
         >
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-tint text-base font-semibold text-brand">
+          <span className={compact ? "" : "flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-tint text-base font-semibold text-brand"}>
             {inicial}
           </span>
-          <div className="min-w-0">
+          <div className={compact ? "hidden" : "min-w-0"}>
             <p className="text-[11px] text-faint">Bem-vindo,</p>
             <p className="truncate text-sm font-semibold text-ink">{nomeAtual}</p>
           </div>
         </button>
 
-        <form action={signOut}>
+        {!compact && <form action={signOut}>
           <button
             type="submit"
             aria-label="Sair da conta"
@@ -56,7 +57,7 @@ export function ProfileMenu({ user }: { user?: SidebarUser }) {
           >
             {IconLogout}
           </button>
-        </form>
+        </form>}
       </div>
 
       {open && typeof document !== "undefined"
@@ -98,6 +99,7 @@ export function ProfileMenu({ user }: { user?: SidebarUser }) {
 
             <p className="mb-3 text-sm font-semibold text-ink">Alterar senha</p>
             <SenhaForm />
+            {compact && <form action={signOut} className="mt-5 border-t border-line pt-4"><button type="submit" className="btn-ghost text-vencido">{IconLogout} Sair da conta</button></form>}
           </div>
         </div>,
             document.body,
