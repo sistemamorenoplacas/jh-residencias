@@ -50,8 +50,29 @@ export interface CobrancaActionState {
 
 const COMPETENCIA_RE = /^\d{4}-\d{2}-01$/;
 
+/** Prefixos das exceções vindas das integrações (ver `mercadopago.ts` / `whatsapp.ts`). */
+const ERRO_MERCADO_PAGO_RE = /^Mercado Pago/;
+const ERRO_WHATSAPP_RE = /^(WhatsApp Cloud API|Falha de rede ao chamar WhatsApp|Resposta do WhatsApp)/;
+
+/**
+ * Mensagem para a UI. Erros de domínio ("Contrato não encontrado.") passam
+ * como estão; falhas de banco e das integrações viram texto genérico e o
+ * detalhe (resposta do MP/Meta, erro do Postgres) fica só no log do servidor.
+ */
 function mensagemErro(error: unknown): string {
-  if (error instanceof ChargesRepoError || error instanceof Error) {
+  if (error instanceof ChargesRepoError) {
+    console.error("[cobrancas] falha no banco:", error.message);
+    return "Falha ao acessar o banco de dados. Tente novamente.";
+  }
+  if (error instanceof Error) {
+    if (ERRO_MERCADO_PAGO_RE.test(error.message)) {
+      console.error("[cobrancas] Mercado Pago:", error.message);
+      return "O Mercado Pago não respondeu como esperado. Tente novamente em instantes.";
+    }
+    if (ERRO_WHATSAPP_RE.test(error.message)) {
+      console.error("[cobrancas] WhatsApp:", error.message);
+      return "Não foi possível enviar a mensagem no WhatsApp. Tente novamente em instantes.";
+    }
     return error.message;
   }
   return "Erro inesperado ao processar a cobrança.";

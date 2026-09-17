@@ -22,12 +22,15 @@ const DIA_VENCIMENTO_MIN = 1;
 const DIA_VENCIMENTO_MAX = 28;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Erro de entrada do formulário — a única exceção cuja mensagem vai para a UI. */
+class ValidationError extends Error {}
+
 /** Aceita "1.530,00" e devolve centavos; lança erro de validação amigável. */
 function parseValorCentavos(raw: FormDataEntryValue | null): number {
   const text = typeof raw === "string" ? raw : "";
   const centavos = parseBRLToCentavos(text);
   if (!Number.isInteger(centavos) || centavos <= 0) {
-    throw new Error("Informe um valor de aluguel maior que zero.");
+    throw new ValidationError("Informe um valor de aluguel maior que zero.");
   }
   return centavos;
 }
@@ -119,16 +122,16 @@ async function readLeaseForm(formData: FormData): Promise<ParsedLease> {
   };
 }
 
-class ValidationError extends Error {}
-
+/**
+ * Só erros de validação viram mensagem. Qualquer outra exceção (inclusive o
+ * `redirect()` de `requireUser`, que o Next sinaliza lançando) é propagada —
+ * nunca exibimos detalhes internos ao usuário.
+ */
 function toState(error: unknown): LeaseFormState {
   if (error instanceof ValidationError) {
     return { error: error.message };
   }
-  if (error instanceof Error) {
-    return { error: error.message };
-  }
-  return { error: "Não foi possível salvar o contrato." };
+  throw error;
 }
 
 export async function criarContrato(
