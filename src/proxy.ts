@@ -12,7 +12,7 @@ import { updateSession } from "@/lib/supabase/middleware";
  * inquilino sem sessão, `/politica-de-privacidade`) e `/api/*` (webhooks/cron,
  * que se autenticam por assinatura/CRON_SECRET, não por cookie de sessão).
  *
- * Domínio de pagamento (`PAY_HOST`, ex.: pay.jhresidencia.com): no mesmo
+ * Domínio de pagamento (`PAY_HOST`, ex.: pay.jhresidencias.com): no mesmo
  * deploy, `https://PAY_HOST/pix/:id` e `/boleto/:id` são reescritos para as
  * páginas em `/pagar/...`; qualquer outro caminho nesse host volta para o
  * site principal. No domínio principal, `/pagar/*` redireciona para o
@@ -51,7 +51,7 @@ function rotearPagamento(request: NextRequest, pathname: string): NextResponse |
     }
     // Links antigos (`/pagar/...`) continuam funcionando no domínio de pagamento.
     if (pathname.startsWith("/pagar/")) return NextResponse.next();
-    return NextResponse.redirect(process.env.APP_BASE_URL ?? "https://jhresidencia.com");
+    return NextResponse.redirect(process.env.APP_BASE_URL ?? "https://www.jhresidencias.com");
   }
 
   if (pathname.startsWith("/pagar/")) {
