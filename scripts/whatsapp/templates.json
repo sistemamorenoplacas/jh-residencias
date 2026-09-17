@@ -4,20 +4,29 @@
     "language": "pt_BR",
     "category": "UTILITY",
     "components": [
+      { "type": "HEADER", "format": "TEXT", "text": "JH RESIDÊNCIAS" },
       {
         "type": "BODY",
-        "text": "Olá {{1}}! Sua cobrança de aluguel referente a {{2}} no valor de R$ {{3}} vence em {{4}}.\n\nPague pelo Pix (copia e cola) ou pelo link: {{5}}\n\nQualquer dúvida, é só responder esta mensagem.",
-        "example": {
-          "body_text": [
-            [
-              "Marina Couto",
-              "Julho/2026",
-              "1.850,00",
-              "10/07/2026",
-              "https://mpago.la/2Xy9Zk"
-            ]
-          ]
-        }
+        "text": "Olá, {{1}}! 👋\nSegue a cobrança do aluguel de {{2}}.\n\n💰 *Valor:* R$ {{3}}\n📅 *Vencimento:* {{4}}\n\nEscolha abaixo como pagar. No Pix você vê o QR Code e o copia e cola; no boleto, a linha digitável.",
+        "example": { "body_text": [["Maria Oliveira", "julho/2026", "1.500,00", "10/07/2026"]] }
+      },
+      { "type": "FOOTER", "text": "Gestão de aluguéis" },
+      {
+        "type": "BUTTONS",
+        "buttons": [
+          {
+            "type": "URL",
+            "text": "Pagar com Pix",
+            "url": "https://pay.jhresidencias.com/pix/{{1}}",
+            "example": ["https://pay.jhresidencias.com/pix/abc123"]
+          },
+          {
+            "type": "URL",
+            "text": "Pagar com Boleto",
+            "url": "https://pay.jhresidencias.com/boleto/{{1}}",
+            "example": ["https://pay.jhresidencias.com/boleto/abc123"]
+          }
+        ]
       }
     ]
   },
@@ -26,20 +35,29 @@
     "language": "pt_BR",
     "category": "UTILITY",
     "components": [
+      { "type": "HEADER", "format": "TEXT", "text": "JH RESIDÊNCIAS" },
       {
         "type": "BODY",
-        "text": "Olá {{1}}! Lembrete: o aluguel referente a {{2}} no valor de {{3}} vence em {{4}}.\n\nPara evitar juros, pague pelo Pix ou pelo link: {{5}}\n\nObrigado!",
-        "example": {
-          "body_text": [
-            [
-              "Marina Couto",
-              "Julho/2026",
-              "R$ 1.850,00",
-              "10/07/2026",
-              "https://mpago.la/2Xy9Zk"
-            ]
-          ]
-        }
+        "text": "Olá, {{1}}! 👋\nLembrete: o aluguel de {{2}} ainda está em aberto.\n\n💰 *Valor:* {{3}}\n📅 *Vencimento:* {{4}}\n\nPara evitar multa e juros, escolha abaixo como pagar. No Pix você vê o QR Code e o copia e cola; no boleto, a linha digitável.",
+        "example": { "body_text": [["Maria Oliveira", "julho/2026", "R$ 1.500,00", "10/07/2026"]] }
+      },
+      { "type": "FOOTER", "text": "Gestão de aluguéis" },
+      {
+        "type": "BUTTONS",
+        "buttons": [
+          {
+            "type": "URL",
+            "text": "Pagar com Pix",
+            "url": "https://pay.jhresidencias.com/pix/{{1}}",
+            "example": ["https://pay.jhresidencias.com/pix/abc123"]
+          },
+          {
+            "type": "URL",
+            "text": "Pagar com Boleto",
+            "url": "https://pay.jhresidencias.com/boleto/{{1}}",
+            "example": ["https://pay.jhresidencias.com/boleto/abc123"]
+          }
+        ]
       }
     ]
   },
@@ -48,19 +66,13 @@
     "language": "pt_BR",
     "category": "UTILITY",
     "components": [
+      { "type": "HEADER", "format": "TEXT", "text": "JH RESIDÊNCIAS" },
       {
         "type": "BODY",
-        "text": "Olá {{1}}! Confirmamos o recebimento do seu pagamento do aluguel referente a {{2}} no valor de {{3}}. Obrigado!",
-        "example": {
-          "body_text": [
-            [
-              "Marina Couto",
-              "Julho/2026",
-              "R$ 1.850,00"
-            ]
-          ]
-        }
-      }
+        "text": "Olá, {{1}}! ✅\nConfirmamos o recebimento do pagamento do aluguel de {{2}}, no valor de {{3}}.\n\nObrigado!",
+        "example": { "body_text": [["Maria Oliveira", "julho/2026", "R$ 1.500,00"]] }
+      },
+      { "type": "FOOTER", "text": "Gestão de aluguéis" }
     ]
   }
 ]
