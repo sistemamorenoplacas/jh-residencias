@@ -54,7 +54,7 @@ export function DashboardNav({ user }: { user?: ShellUser }) {
         ) : null}
         <Link
           href="/mensagens"
-          className="estate-icon-button"
+          className="estate-icon-button estate-action-messages"
           aria-label="Mensagens"
           title="Mensagens"
           aria-current={isActive(pathname, "/mensagens") ? "page" : undefined}
@@ -63,7 +63,7 @@ export function DashboardNav({ user }: { user?: ShellUser }) {
         </Link>
         <Link
           href="/configuracoes"
-          className="estate-icon-button"
+          className="estate-icon-button estate-action-settings"
           aria-label="Configurações"
           title="Configurações"
           aria-current={isActive(pathname, "/configuracoes") ? "page" : undefined}

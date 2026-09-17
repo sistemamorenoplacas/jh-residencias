@@ -42,32 +42,33 @@ export function MobileNav() {
 
   return (
     <>
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex items-stretch border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+      <nav
+        aria-label="Navegação principal"
+        className="mobile-bar fixed inset-x-3 z-30 flex items-stretch rounded-[22px] border border-line bg-surface/92 shadow-[0_18px_40px_-18px_rgba(5,35,81,0.45)] backdrop-blur-md lg:hidden"
+      >
         {primaryItems.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium ${
-                active ? "text-brand" : "text-faint"
-              }`}
+              aria-current={active ? "page" : undefined}
+              className={`mobile-bar-item ${active ? "is-active" : ""}`}
             >
-              {item.icon}
-              <span className="leading-none">{item.label.split(" ")[0]}</span>
+              <span className="mobile-bar-icon">{item.icon}</span>
+              <span>{item.short}</span>
             </Link>
           );
         })}
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium ${
-            maisAtivo ? "text-brand" : "text-faint"
-          }`}
+          className={`mobile-bar-item ${maisAtivo ? "is-active" : ""}`}
           aria-label="Mais opções"
+          aria-haspopup="dialog"
         >
-          {IconMore}
-          <span className="leading-none">Mais</span>
+          <span className="mobile-bar-icon">{IconMore}</span>
+          <span>Mais</span>
         </button>
       </nav>
 
@@ -85,6 +86,9 @@ export function MobileNav() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line-strong" />
+                <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-faint">
+                  Mais opções
+                </p>
                 <div className="flex flex-col">
                   {extraItems.map((item) => (
                     <Link

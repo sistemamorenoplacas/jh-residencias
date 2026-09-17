@@ -8,6 +8,8 @@ export interface ShellUser {
 export interface NavItem {
   href: string;
   label: string;
+  /** Rótulo curto da barra inferior (celular). */
+  short: string;
   icon: ReactNode;
 }
 
@@ -17,6 +19,7 @@ const ICON = "size-[18px] shrink-0";
 export const NAV: NavItem[] = [
   {
     href: "/painel",
+    short: "Início",
     label: "Visão geral",
     icon: (
       <svg className={ICON} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -26,6 +29,7 @@ export const NAV: NavItem[] = [
   },
   {
     href: "/cobrancas",
+    short: "Cobranças",
     label: "Cobranças",
     icon: (
       <svg className={ICON} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -35,6 +39,7 @@ export const NAV: NavItem[] = [
   },
   {
     href: "/inquilinos",
+    short: "Inquilinos",
     label: "Inquilinos",
     icon: (
       <svg className={ICON} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -44,6 +49,7 @@ export const NAV: NavItem[] = [
   },
   {
     href: "/contratos",
+    short: "Contratos",
     label: "Contratos",
     icon: (
       <svg className={ICON} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -53,6 +59,7 @@ export const NAV: NavItem[] = [
   },
   {
     href: "/imoveis",
+    short: "Imóveis",
     label: "Imóveis",
     icon: (
       <svg className={ICON} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -62,6 +69,7 @@ export const NAV: NavItem[] = [
   },
   {
     href: "/mensagens",
+    short: "Mensagens",
     label: "Mensagens",
     icon: (
       <svg className={ICON} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -71,6 +79,7 @@ export const NAV: NavItem[] = [
   },
   {
     href: "/configuracoes",
+    short: "Ajustes",
     label: "Configurações",
     icon: (
       <svg className={ICON} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

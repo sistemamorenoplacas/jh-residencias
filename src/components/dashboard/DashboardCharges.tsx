@@ -93,7 +93,7 @@ export function DashboardCharges({
             <tbody>
               {filtered.slice(0, 5).map((row) => (
                 <tr key={row.id}>
-                  <td>
+                  <td className="estate-td-imovel">
                     <Link
                       href={`/cobrancas/${row.id}`}
                       className="estate-charge-property"
@@ -107,17 +107,17 @@ export function DashboardCharges({
                       </span>
                     </Link>
                   </td>
-                  <td className="tnum">{formatDiaMes(row.vencimento)}</td>
-                  <td className="tnum estate-charge-value">
+                  <td className="tnum estate-td-venc">{formatDiaMes(row.vencimento)}</td>
+                  <td className="tnum estate-charge-value estate-td-valor">
                     {formatBRL(row.valorCentavos)}
                   </td>
-                  <td>
+                  <td className="estate-td-status">
                     <StatusPill
                       status={row.status}
                       diasAtraso={row.diasAtraso}
                     />
                   </td>
-                  <td>
+                  <td className="estate-td-acao">
                     <Link
                       className="estate-icon-button"
                       href={`/cobrancas/${row.id}`}
