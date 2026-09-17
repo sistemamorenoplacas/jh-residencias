@@ -45,6 +45,7 @@
 - `GET/POST /api/webhooks/whatsapp` — `GET` verifica `hub.verify_token`; `POST` recebe status (sent/delivered/read/failed) e mensagens recebidas.
 - `GET|POST /api/cron/gerar-cobrancas` — protegido por `CRON_SECRET`, gera cobranças do mês (o Vercel Cron chama com GET).
 - `GET|POST /api/cron/lembretes` — protegido por `CRON_SECRET`, dispara lembretes D-3/D0/D+1/D+5.
+- `GET /api/health` — pública; lê 1 linha do banco. Chamada pelo Vercel Cron a cada 6 h como keep-alive (o Supabase Free pausa projetos após 7 dias sem requisições) e utilizável por monitor externo.
 
 ### 4. Jobs agendados (Vercel Cron)
 - `0 9 1 * *` → gera cobranças do mês (dia 1, 09:00).
