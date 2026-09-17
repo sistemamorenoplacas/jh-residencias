@@ -5,9 +5,9 @@ import { useActionState, useEffect, useState, useTransition } from "react";
 import {
   aplicarTaxasAosContratos,
   salvarConfiguracoes,
-  CONFIG_FORM_INITIAL_STATE,
   type AplicarTaxasState,
 } from "@/app/(painel)/configuracoes/actions";
+import { CONFIG_FORM_INITIAL_STATE } from "@/app/(painel)/configuracoes/form-state";
 import { descreverMarcos, formatMarcos, parseMarcos } from "@/lib/cobranca-params";
 import type { AppSettings } from "@/lib/settings";
 

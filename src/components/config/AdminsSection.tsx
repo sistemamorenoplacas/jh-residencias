@@ -3,12 +3,11 @@
 import { useActionState, useState, useTransition } from "react";
 
 import {
-  CONVITE_INITIAL_STATE,
   convidarAdministrador,
   gerarLinkConvite,
   removerAdministrador,
-  type ConviteState,
 } from "@/app/(painel)/configuracoes/admins-actions";
+import { CONVITE_INITIAL_STATE, type ConviteState } from "@/app/(painel)/configuracoes/form-state";
 import type { AdminInfo } from "@/lib/admins";
 
 const IconWhatsapp = (

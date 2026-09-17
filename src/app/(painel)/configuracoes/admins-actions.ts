@@ -12,6 +12,7 @@ import {
   type TipoConvite,
 } from "@/lib/convite";
 import { createServiceClient } from "@/lib/supabase/server";
+import type { ConviteState } from "./form-state";
 
 /**
  * Administradores adicionais (Configurações → Administradores).
@@ -25,15 +26,6 @@ import { createServiceClient } from "@/lib/supabase/server";
  * não depende de e-mail: o link vai por WhatsApp e o convidado cria a senha
  * ao ativar (`/login/convite`).
  */
-
-export interface ConviteState {
-  ok: boolean;
-  error: string | null;
-  /** Preenchido após criar/gerar: para o botão do WhatsApp e "copiar link". */
-  convite: { nome: string; link: string; whatsappUrl: string; mensagem: string } | null;
-}
-
-export const CONVITE_INITIAL_STATE: ConviteState = { ok: false, error: null, convite: null };
 
 const ERRO_SO_PROPRIETARIO = "Apenas o proprietário da conta pode gerenciar administradores.";
 

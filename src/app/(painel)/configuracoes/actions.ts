@@ -6,19 +6,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { parseMarcos } from "@/lib/cobranca-params";
 import { createServerClient } from "@/lib/supabase/server";
-
-export interface ConfigFormState {
-  ok: boolean;
-  error: string | null;
-  /** True logo após um salvamento bem-sucedido (para feedback no form). */
-  saved: boolean;
-}
-
-export const CONFIG_FORM_INITIAL_STATE: ConfigFormState = {
-  ok: false,
-  error: null,
-  saved: false,
-};
+import type { ConfigFormState } from "./form-state";
 
 const emailOpcional = z
   .string()
