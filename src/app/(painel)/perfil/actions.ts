@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { SENHA_MIN } from "@/lib/senha";
 import { createServerClient } from "@/lib/supabase/server";
 
 export interface PerfilState {
@@ -16,7 +17,7 @@ const nomeSchema = z.object({
 
 const senhaSchema = z
   .object({
-    senha: z.string().min(6, "Senha deve ter ao menos 6 caracteres."),
+    senha: z.string().min(SENHA_MIN, `Senha deve ter ao menos ${SENHA_MIN} caracteres.`),
     confirmacao: z.string(),
   })
   .refine((d) => d.senha === d.confirmacao, {

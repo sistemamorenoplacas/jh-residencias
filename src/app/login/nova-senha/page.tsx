@@ -6,6 +6,7 @@ import { useFormStatus } from "react-dom";
 import Link from "next/link";
 
 import { atualizarSenhaRecuperacao, type NovaSenhaState } from "@/app/login/actions";
+import { SENHA_MIN } from "@/lib/senha";
 
 const INITIAL: NovaSenhaState = { ok: null, error: null };
 
@@ -86,7 +87,7 @@ export default function NovaSenhaPage() {
                     type={showSenha ? "text" : "password"}
                     autoComplete="new-password"
                     required
-                    minLength={6}
+                    minLength={SENHA_MIN}
                     placeholder="••••••••"
                     className="field pr-10"
                   />
@@ -112,7 +113,7 @@ export default function NovaSenhaPage() {
                     type={showConfirmar ? "text" : "password"}
                     autoComplete="new-password"
                     required
-                    minLength={6}
+                    minLength={SENHA_MIN}
                     placeholder="••••••••"
                     className="field pr-10"
                   />

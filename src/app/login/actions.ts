@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { createServerClient } from "@/lib/supabase/server";
 import { resolveBaseUrl } from "@/lib/base-url";
+import { SENHA_MIN } from "@/lib/senha";
 
 /**
  * Server Actions de autenticação.
@@ -112,7 +113,7 @@ export interface NovaSenhaState {
 
 const novaSenhaSchema = z
   .object({
-    senha: z.string().min(6, "Senha deve ter ao menos 6 caracteres."),
+    senha: z.string().min(SENHA_MIN, `Senha deve ter ao menos ${SENHA_MIN} caracteres.`),
     confirmar: z.string(),
   })
   .refine((d) => d.senha === d.confirmar, {

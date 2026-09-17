@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { atualizarNome, atualizarSenha, type PerfilState } from "./actions";
+import { SENHA_MIN } from "@/lib/senha";
 
 const INIT: PerfilState = { error: null, success: null };
 
@@ -67,7 +68,7 @@ export function SenhaForm() {
           name="senha"
           type="password"
           required
-          minLength={6}
+          minLength={SENHA_MIN}
           className="field"
           placeholder="Mínimo 6 caracteres"
         />
