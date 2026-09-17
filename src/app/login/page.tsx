@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { getSession } from "@/lib/auth";
 import { VertixCredit } from "@/components/ui/VertixCredit";
+import { InstallAppOnboarding } from "@/components/pwa/InstallAppOnboarding";
 
 import { LoginForm } from "./LoginForm";
 
@@ -41,7 +42,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <main
-      className="relative grid min-h-dvh place-items-center overflow-hidden px-4 pb-10 pt-[calc(2.5rem+env(safe-area-inset-top,0px))]"
+      className="login-screen relative grid min-h-dvh place-items-center overflow-hidden px-4 pb-[calc(2.5rem+env(safe-area-inset-bottom,0px))] pt-[calc(2.5rem+env(safe-area-inset-top,0px))]"
       style={{ background: "linear-gradient(160deg,#041a3d 0%,#052351 52%,#0e3a75 100%)" }}
     >
       {/* Grade de pontos */}
@@ -86,6 +87,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </p>
         <VertixCredit tone="dark" className="pt-3" />
       </div>
+
+      {/* Pop-up "instale como app" já no login (1º acesso pelo celular). */}
+      <InstallAppOnboarding />
     </main>
   );
 }

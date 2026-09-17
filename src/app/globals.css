@@ -77,10 +77,32 @@ html {
   text-rendering: optimizeLegibility;
 }
 
+/*
+  O Safari do iOS 26 (barra de status e barra inferior) e o app instalado
+  pintam as áreas fora da página com o fundo de <html>. Para a tela ficar
+  imersiva, a raiz acompanha o fundo do topo de cada tela: navy no login e
+  no painel do celular (cabeçalho navy), claro no restante.
+*/
+html {
+  background: var(--color-canvas);
+}
+html:has(.login-screen) {
+  background: #041a3d;
+}
+@media (max-width: 700px) {
+  html:has(.estate-shell) {
+    background: #061a3a;
+  }
+}
+
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
+}
+/* Login: o próprio <main> é navy até as bordas, inclusive sob a home bar. */
+body:has(.login-screen) {
+  background: #041a3d;
 }
 
 /* =========================================================================
